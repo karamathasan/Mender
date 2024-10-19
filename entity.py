@@ -8,17 +8,17 @@ from element import Element, Element2D, Element3D
 class Entity(Element):
     def __init__():
         pass
-    def render():
+    def draw():
         pass
 
 class Entity2D(Entity, Element2D):
     def __init__():
         pass
-    def render():
+    def draw():
         pass
 
 class Entity3D(Entity, Element3D):
     def __init__():
         pass
-    def render():
+    def draw():
         pass

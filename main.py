@@ -8,12 +8,12 @@ from entities._2D.square import Square
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
+
 clock = pygame.time.Clock()
 running = True
 
-circle = Circle(2, np.array([2, 1]))
-scene = Scene2D(circle)
-
+circle = Circle(40)
+scene = Scene2D(circle, screen=screen)
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -24,12 +24,12 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
 
     # RENDER YOUR GAME HERE
-    # player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
-    # pygame.draw.circle(screen, "red", player_pos, 40)
-    scene.render(screen)
-    circle.render(screen)
+    scene.render()
+    # circle.drawCircle(screen)
+
     # flip() the display to put your work on screen
     pygame.display.flip()
     clock.tick(60)  # limits FPS to 60
 
 pygame.quit()
+
