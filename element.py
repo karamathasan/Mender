@@ -6,6 +6,9 @@ class Element(ABC):
 
     def draw(self):
         pass
+    
+    def update(self):
+        pass
 
 class Element2D(Element):
     def __init__(self):

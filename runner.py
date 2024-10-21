@@ -4,6 +4,7 @@ from scene import Scene, Scene2D, Scene3D
 from entities._2D.circle import Circle
 from entities._2D.square import Square
 
+from physics.transform import Transform2D
 
 # pygame setup
 pygame.init()
@@ -12,8 +13,11 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
 
+# Scene setup
 circle = Circle(40)
 scene = Scene2D(circle, screen=screen)
+scene.add(Square(20,transform=Transform2D(np.array([40,0]),0),color = "red"))
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -22,10 +26,9 @@ while running:
             running = False
 
     # fill the screen with a color to wipe away anything from last frame
-
+    screen.fill("black")
     # RENDER YOUR GAME HERE
     scene.render()
-    # circle.drawCircle(screen)
 
     # flip() the display to put your work on screen
     pygame.display.flip()

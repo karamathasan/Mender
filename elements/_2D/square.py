@@ -1,10 +1,10 @@
 import pygame
 import numpy
-from entity import Entity2D
+from element import Element2D
 from physics.transform import Transform2D
 
-class Square(Entity2D):
-    def __init__(self, size, transform : Transform2D = None, color = "white"):
+class Square(Element2D):
+    def __init__(self, size, transform : Transform2D = None, color: int = "white", filled = True):
         '''
         Paramaters:
             size: the side length of the square 
@@ -18,5 +18,5 @@ class Square(Entity2D):
         self.color = color
 
     def draw(self, camera):
-        originScreen = camera.ToScreen(self.transform.position)
+        originScreen = camera.ToScreen(self.transfrom.position)
         pygame.draw.rect(camera.screen, self.color, pygame.rect.Rect(originScreen[0],originScreen[1],self.size,self.size))

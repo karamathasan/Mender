@@ -1,14 +1,19 @@
-from entity import Entity2D
-import pygame.draw as draw
+import pygame
 import numpy
+from entity import Entity3D
+from physics.transform import Transform3D
 
-class Square(Entity2D):
+class Cube(Entity3D):
 
-    def __init__(self, size, transform):
+    def __init__(self, size, transform: Transform3D = None):
         '''
-        Paramaters:
+        Parameters:
             size: the side length of the cube
             transform: the cube's transform, which includes its orientation and position
         '''
+        self.size = size
+        if transform is None:
+            self.transform = Transform3D()
+        else: self.transform = transform
     # def render(self):
     #     draw.
