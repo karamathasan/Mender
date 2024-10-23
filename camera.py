@@ -17,7 +17,8 @@ class Camera2D(Camera):
         self.screen = screen
         if transform is None:
             self.transform = Transform2D(np.array([0,0]),0)
-        self.transform = transform
+        else:
+            self.transform = transform
 
     def ToScreen(self, coordinate):
         # 1280 x 720
@@ -56,12 +57,13 @@ class Orthographic3D(Camera3D):
         self.screen = screen
         if transform is None:
             self.transform = Transform3D(np.array([0,0,0]),np.array([0,1,0]))
-        self.transform = transform
+        else: 
+            self.transform = transform
 
     def ToScreen(self, coordinate):
         # 1280 x 720
         diff = coordinate - self.transform.position 
-        dist = np.dot(self.transform.orientation, diff)
+        dist = np.dot(self.transform.orientation, np.linalg.norm(diff)) 
 
         projection = coordinate - dist * self.transform.orientation - self.transform.position
         size = self.screen.get_size()

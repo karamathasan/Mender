@@ -15,11 +15,12 @@ class Scene():
 
 
 class Scene2D(Scene):
-    def __init__(self, *args: Element2D, screen):
+    def __init__(self, *args: Element2D, screen, camera: Camera2D = None):
         self.elements = list(args)
-        self.screen = screen
-        self.camera = Camera2D(screen)
-        pass
+        if camera is None:
+            self.camera = Camera2D(screen)
+        else:
+            self.camera = camera
 
     def add(self, *args: Element2D):
         self.elements.extend(args)
@@ -36,15 +37,14 @@ class Scene2D(Scene):
 class Scene3D(Scene):
     def __init__(self, *args: Element3D, screen, camera: Camera3D = None):
         self.elements = list(args)
-        self.screen = screen
         if camera is None:
-            self.camera = Orthographic3D()
-        self.camera = Camera2D(screen)
-        pass
+            self.camera = Camera3D(screen) # using a generic type may cause problems
+        else: 
+            self.camera = camera
 
     def add(self, *args: Element3D):
         self.elements.extend(args)
 
-    def render(self, screen):
+    def render(self):
         for element in self.elements:
-            element.render(screen)
+            self.camera.render(element)
