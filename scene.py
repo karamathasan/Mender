@@ -13,6 +13,10 @@ class Scene():
     def render(self):
         pass
 
+    def physicsStep(self):
+        # update all physics objects in the scene
+        return
+
 
 class Scene2D(Scene):
     def __init__(self, *args: Element2D, screen, camera: Camera2D = None):

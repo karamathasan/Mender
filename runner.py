@@ -22,7 +22,6 @@ cube = Cube(100)
 _3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
 _3dscene.add(cube)
 
-
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
