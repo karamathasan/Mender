@@ -1,4 +1,5 @@
 from element import Element, Element2D, Element3D
+from entity import Entity, Entity2D, Entity3D
 from camera import Camera, Camera2D, Camera3D, Orthographic3D, Perspective3D
 # the scene is where elements will be rendered together
 # elements of the scene can be in 2d or 3d
@@ -32,8 +33,12 @@ class Scene2D(Scene):
     def render(self):
         for element in self.elements:
             self.camera.render(element)
+        self.physicsStep()
     
     def physicsStep(self):
+        for element in self.elements:
+            if element.isinstance(Entity):
+                print("element is an entity")
         # update all physics objects in the scene
         return
 

@@ -14,13 +14,13 @@ clock = pygame.time.Clock()
 running = True
 
 # Scene setup
-# circle = Circle(40)
-# scene = Scene2D(circle, screen=screen)
-# scene.add(Square(20,transform=Transform2D(np.array([40,0]),0),color = "red"))
+circle = Circle(40)
+scene = Scene2D(circle, screen=screen)
+scene.add(Square(20,transform=Transform2D(np.array([40,0]),0),color = "red"))
 
-cube = Cube(100)
-_3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
-_3dscene.add(cube)
+# cube = Cube(100)
+# _3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
+# _3dscene.add(cube)
 
 while running:
     # poll for events
@@ -33,8 +33,8 @@ while running:
     screen.fill("black")
     # RENDER YOUR GAME HERE
 
-    # scene.render()
-    _3dscene.render()
+    scene.render()
+    # _3dscene.render()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
