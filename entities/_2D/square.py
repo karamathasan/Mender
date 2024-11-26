@@ -2,19 +2,17 @@ import pygame
 import numpy
 from entity import Entity2D
 from physics.transform import Transform2D
+from physics.dynamics import Dynamics2D
 
 class Square(Entity2D):
-    def __init__(self, size, transform : Transform2D = None, color = "white"):
+    def __init__(self, size, transform : Transform2D = None, dynamics:Dynamics2D = None , color = "white"):
         '''
         Paramaters:
             size: the side length of the square 
             origin: the origin in 2D of the square
         '''
-        self.size = size
-        if transform is None:
-            self.transform = Transform2D()
-        else: self.transform = transform
-
+        super().__init__(transform, dynamics)
+        self.size = size 
         self.color = color
 
     def draw(self, camera):

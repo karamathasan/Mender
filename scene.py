@@ -1,7 +1,7 @@
 from element import Element, Element2D, Element3D
 from entity import Entity, Entity2D, Entity3D
 from camera import Camera, Camera2D, Camera3D, Orthographic3D, Perspective3D
-from physics.solver import Solver, ExplicitEuclid
+from physics.solver import Solver, ExplicitEuclid2D
 # the scene is where elements will be rendered together
 # elements of the scene can be in 2d or 3d
 # each scene should have its own coordinate system
@@ -21,15 +21,16 @@ class Scene():
 
 
 class Scene2D(Scene):
-    def __init__(self, *args: Element2D, screen, camera: Camera2D = None, solver: Solver = None):
+    def __init__(self, *args: Element2D, screen, camera: Camera2D = None, solver: Solver = None, fps = 60):
         self.elements = list(args)
+        self.fps = fps
         if camera is None:
             self.camera = Camera2D(screen)
         else:
             self.camera = camera
 
         if solver is None:
-            self.solver = ExplicitEuclid(60)
+            self.solver = ExplicitEuclid2D(fps)
         else:
             self.solver = solver
         
@@ -40,11 +41,11 @@ class Scene2D(Scene):
     def render(self):
         for element in self.elements:
             self.camera.render(element)
-        self.physicsStep()
+        # self.physicsStep()
     
     def physicsStep(self):
         for element in self.elements:
-            if isinstance(element, Entity):
+            if isinstance(element, Entity2D):
                 self.solver.solve(element)
         # update all physics objects in the scene
         return

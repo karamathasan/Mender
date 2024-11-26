@@ -16,14 +16,18 @@ class Transform2D(Transform):
             orientation: the Z rotation of a 2d object where Z points out of the sceen 
         """
         if position is None:
-            self.position = np.array([0,0])
-        else: self.position = position
+            self.position = np.array([0.0,0.0])
+        else: self.position = np.float64(position)
         if orientation is None:
             self.orientation = 0
         else: self.orientation = orientation
     
     def shift(self, vec):
+        print(f"position: {self.position}")
+        print(f"shift: {vec}")
         self.position += vec
+        print(f"position after: {self.position}")
+
 
     def rotate(self, degrees):
         self.orientation += degrees
@@ -41,10 +45,10 @@ class Transform3D(Transform):
             orientation: the Euler angles of the object to represent its orientation
         """
         if position is None:
-            self.position = np.array([0,0,0])
-        else: self.position = position
+            self.position = np.array([0.0,0,0.0])
+        else: self.position = np.float64(position)
         if orientation is None:
-            self.orientation = np.array([1,0,0])
+            self.orientation = np.array([1.0,0.0,0.0])
         else: self.orientation = orientation
     
     def shift(self, vec):

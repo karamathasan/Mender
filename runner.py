@@ -12,6 +12,7 @@ screen = pygame.display.set_mode((1280, 720))
 
 clock = pygame.time.Clock()
 running = True
+fps = 60
 
 # Scene setup
 circle = Circle(40)
@@ -34,11 +35,12 @@ while running:
     # RENDER YOUR GAME HERE
 
     scene.render()
+    scene.physicsStep()
     # _3dscene.render()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
-    clock.tick(60)  # limits FPS to 60
+    clock.tick(fps)  # limits FPS to 60
 
 pygame.quit()
 
