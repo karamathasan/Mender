@@ -1,6 +1,7 @@
 from abc import ABC
 import numpy as np
-from entity import Entity, Entity2D
+from physics.entity import Entity, Entity2D
+
 class Solver(ABC):
     def __init__(self, fps):
         self.fps = fps
@@ -15,7 +16,8 @@ class ExplicitEuclid2D(Solver):
         transform = entity.transform
 
         v = dyn.velocity
-        a = dyn.acceleration
+        a = entity.dynamics.netForce()
+        # a = dyn.acceleration
 
         # changing the transform and dynamics objects should cause the object to move
         transform.shift(v * self.deltaTime)

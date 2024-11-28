@@ -1,6 +1,6 @@
 import pygame
 import numpy
-from entity import Entity2D
+from physics.entity import Entity2D
 from physics.transform import Transform2D
 from physics.dynamics import Dynamics2D
 

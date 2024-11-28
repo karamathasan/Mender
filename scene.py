@@ -1,5 +1,5 @@
 from element import Element, Element2D, Element3D
-from entity import Entity, Entity2D, Entity3D
+from physics.entity import Entity, Entity2D, Entity3D
 from camera import Camera, Camera2D, Camera3D, Orthographic3D, Perspective3D
 from physics.solver import Solver, ExplicitEuclid2D
 # the scene is where elements will be rendered together

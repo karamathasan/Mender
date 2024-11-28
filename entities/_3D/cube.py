@@ -1,6 +1,6 @@
 import pygame
 import numpy
-from entity import Entity3D
+from physics.entity import Entity3D
 from physics.transform import Transform3D
 
 class Cube(Entity3D):
