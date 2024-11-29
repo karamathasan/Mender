@@ -1,6 +1,7 @@
 from physics.entity import Entity2D
 from physics.transform import Transform2D
 from physics.dynamics import Dynamics2D
+from physics.constraints.gravity import Gravity2D
 
 import pygame
 import numpy as np
@@ -15,6 +16,7 @@ class Circle(Entity2D):
         super().__init__(transform, dynamics)
         self.radius = radius
         self.color = color
+        self.applyConstraint(Gravity2D())
 
     def draw(self, camera):
         originScreen = camera.ToScreen(self.transform.position)

@@ -44,6 +44,14 @@ class Dynamics2D(Dynamics):
     def addForce(self, force: Force2D):
         if force.forceMode == "impulse":
             self.forces[force] = force.duration
+        else:
+            self.forces[force] = np.inf
+
+    def netForce(self):
+        sum = Force2D.zero()
+        for force in self.forces.keys():
+            sum += force
+        return sum
 
 class Dynamics3D(Dynamics):
     def __init__(self, velocity: np.ndarray = None, acceleration: np.ndarray = None):

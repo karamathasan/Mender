@@ -22,12 +22,9 @@ class Transform2D(Transform):
             self.orientation = 0
         else: self.orientation = orientation
     
-    def shift(self, vec):
-        print(f"position: {self.position}")
-        print(f"shift: {vec}")
+    def shift(self, vec: np.ndarray):
+        assert vec.shape == (2,)
         self.position += vec
-        print(f"position after: {self.position}")
-
 
     def rotate(self, degrees):
         self.orientation += degrees

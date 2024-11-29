@@ -20,7 +20,8 @@ class Camera2D(Camera):
         else:
             self.transform = transform
 
-    def ToScreen(self, coordinate):
+    def ToScreen(self, coordinate: np.ndarray):
+        assert coordinate.shape == (2,)
         # 1280 x 720
         size = self.screen.get_size()
         pygX = size[0]/2 + coordinate[0]

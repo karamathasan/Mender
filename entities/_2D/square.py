@@ -3,6 +3,7 @@ import numpy
 from physics.entity import Entity2D
 from physics.transform import Transform2D
 from physics.dynamics import Dynamics2D
+from camera import Camera2D
 
 class Square(Entity2D):
     def __init__(self, size, transform : Transform2D = None, dynamics:Dynamics2D = None , color = "white"):
@@ -15,6 +16,6 @@ class Square(Entity2D):
         self.size = size 
         self.color = color
 
-    def draw(self, camera):
+    def draw(self, camera: Camera2D):
         originScreen = camera.ToScreen(self.transform.position)
         pygame.draw.rect(camera.screen, self.color, pygame.rect.Rect(originScreen[0],originScreen[1],self.size,self.size))

@@ -12,11 +12,13 @@ class ExplicitEuclid2D(Solver):
         super().__init__(fps)
     
     def solve(self, entity: Entity2D):
+        # constraints will visit the solver to provide or edit calculations
         dyn = entity.dynamics
         transform = entity.transform
 
         v = dyn.velocity
-        a = entity.dynamics.netForce()
+        a = entity.dynamics.netForce().toAcceleration(entity.mass)
+        # print(f"acceleration: {a}")
         # a = dyn.acceleration
 
         # changing the transform and dynamics objects should cause the object to move
