@@ -15,6 +15,7 @@ class ExplicitEuclid2D(Solver):
         # constraints will visit the solver to provide or edit calculations
         dyn = entity.dynamics
         transform = entity.transform
+        # print(entity.mass)
 
         v = dyn.velocity
         a = entity.dynamics.netForce().toAcceleration(entity.mass)
@@ -24,5 +25,5 @@ class ExplicitEuclid2D(Solver):
         # changing the transform and dynamics objects should cause the object to move
         transform.shift(v * self.deltaTime)
         v += a * self.deltaTime
-
         dyn.set(v, a)
+        # print(entity.mass)

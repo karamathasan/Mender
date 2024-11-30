@@ -17,7 +17,7 @@ fps = 60
 # Scene setup
 circle = Circle(40)
 scene = Scene2D(circle, screen=screen)
-scene.add(Square(20,transform=Transform2D(np.array([500,0]),0),color = "red"))
+# scene.add(Square(20,transform=Transform2D(np.array([500,0]),0),color = "red"))
 
 # cube = Cube(100)
 # _3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))

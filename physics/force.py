@@ -20,7 +20,7 @@ class Force(ABC):
     def __imul__(self, other):
         return self.__mul__(other)
 
-    def __truediv__(self, other: float | int):
+    def __truediv__(self, other: float ):
         out = self.direction * self.magnitude / other
         return self.vec2Force(out)
     
@@ -31,7 +31,7 @@ class Force(ABC):
         return self.magnitude * self.direction
 
     def toAcceleration(self, mass: float):
-        return self.toVec()/mass
+        return self.toVec() / mass
 
 class Force2D(Force):
     def __init__(self, magnitude: float, direction: np.ndarray, duration = None):
