@@ -1,18 +1,19 @@
-import pygame
-import numpy
 from physics.entity import Entity2D
 from physics.transform import Transform2D
 from physics.dynamics import Dynamics2D
 from camera import Camera2D
 
+import pygame
+import numpy as np
+
 class Square(Entity2D):
-    def __init__(self, size, transform : Transform2D = None, dynamics:Dynamics2D = None , color = "white"):
+    def __init__(self, size, mass = 10.0, transform : Transform2D = None, dynamics:Dynamics2D = None, gravity_enabled = True, color = "white"):
         '''
         Paramaters:
             size: the side length of the square 
             origin: the origin in 2D of the square
         '''
-        super().__init__(transform, dynamics)
+        super().__init__(mass, transform, dynamics, gravity_enabled)
         self.size = size 
         self.color = color
 

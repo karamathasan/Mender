@@ -8,6 +8,7 @@ class Dynamics(ABC):
         self.velocity = None
         self.acceleration = None
         self.forces = {}
+        self.parent = None
 
     def addForce(self, force):
         pass
@@ -17,9 +18,15 @@ class Dynamics(ABC):
         for force in self.forces.keys():
             sum += force
         return sum
+        
+    def netAcceleration(self) -> float:
+        fn = self.netForce()
+        return fn.toAcceleration(self.parent.mass)
 
 class Dynamics2D(Dynamics):
-    def __init__(self, velocity: np.ndarray = None, acceleration: np.ndarray = None):
+    def __init__(self, parent ,velocity: np.ndarray = None, acceleration: np.ndarray = None):
+        assert parent
+        self.parent = parent
         if velocity is None:
             self.velocity = np.array([0.0,0.0])
         else: 
@@ -54,8 +61,9 @@ class Dynamics2D(Dynamics):
         return sum
 
 class Dynamics3D(Dynamics):
-    def __init__(self, velocity: np.ndarray = None, acceleration: np.ndarray = None):
-
+    def __init__(self, parent, velocity: np.ndarray = None, acceleration: np.ndarray = None):
+        assert parent
+        self.parent = parent
         if velocity is None:
             self.velocity = np.array([0.0,0.0,0.0])
         else:
@@ -80,3 +88,5 @@ class Dynamics3D(Dynamics):
     def addForce(self, force: Force3D):
         if force.forceMode == "impulse":
             self.forces[force] = force.duration
+        else:
+            self.forces[force] = np.inf

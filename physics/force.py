@@ -12,8 +12,8 @@ class Force(ABC):
     
     def __iadd__(self, other):
         return self.__add__(other)
-
-    def __mul__(self, other):
+    
+    def __mul__(self, other: float):
         out = self.direction * self.magnitude * other
         return self.vec2Force(out)
     
@@ -32,6 +32,7 @@ class Force(ABC):
 
     def toAcceleration(self, mass: float):
         return self.toVec() / mass
+    __rmul__ = __mul__
 
 class Force2D(Force):
     def __init__(self, magnitude: float, direction: np.ndarray, duration = None):
