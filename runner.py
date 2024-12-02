@@ -15,7 +15,7 @@ running = True
 fps = 60
 
 # Scene setup
-circle = Circle(40)
+circle = Circle(1)
 scene = Scene2D(circle, screen=screen)
 # scene.add(Square(20, 5, transform=Transform2D(np.array([40,0]),0),color = "red"))
 

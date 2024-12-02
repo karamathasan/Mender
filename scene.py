@@ -41,7 +41,6 @@ class Scene2D(Scene):
     def render(self):
         for element in self.elements:
             self.camera.render(element)
-        # self.physicsStep()
     
     def physicsStep(self):
         for element in self.elements:
