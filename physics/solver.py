@@ -20,4 +20,5 @@ class ExplicitEuclid2D(Solver):
 
         v += a * self.deltaTime
         transform.shift(v * self.deltaTime)
+        # print(transform)
         # dyn.set(v, a)

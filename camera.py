@@ -13,6 +13,15 @@ class Camera():
         pass
     
 class Camera2D(Camera):
+    '''
+    Create a generic 2D camera for 2D scenes.
+    
+    Parameters:
+        screen:  Pygame surface, the screen were the camera will output to
+        camera_width: the width of the camera in meters (its viewport width is equal to this amount)
+        aspect_ratio: the ratio between the width and the height (16/9 by default)
+        transform: the Transform2D associated with the camera in worldspace 
+    '''
     def __init__(self, screen, camera_width = 30, aspect_ratio: float = 16/9, transform: Transform2D = None):
         self.screen = screen
         self.width = camera_width
@@ -27,11 +36,11 @@ class Camera2D(Camera):
         assert vec.shape == (2,)
         # 1280 x 720
         size = self.screen.get_size()
-        pygX = size[0]/2 + vec[0]
-        pygY = size[1]/2 - vec[1]
+        pygX = size[0]/2 + self.toScreenSpace(vec[0])
+        pygY = size[1]/2 - self.toScreenSpace(vec[1])
         return pygame.Vector2(pygX,pygY)
     
-    def toScreenSpace(self, length):
+    def toScreenSpace(self, length: float):
         """
         converts a length from the worldspace coordinate system to the screenspace
         """

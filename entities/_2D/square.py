@@ -9,7 +9,7 @@ import numpy as np
 class Square(Entity2D):
     def __init__(self, size, mass = 10.0, transform : Transform2D = None, dynamics:Dynamics2D = None, gravity_enabled = True, color = "white"):
         '''
-        Paramaters:
+        Parameters:
             size: the side length of the square 
             origin: the origin in 2D of the square
         '''
@@ -18,5 +18,10 @@ class Square(Entity2D):
         self.color = color
 
     def draw(self, camera: Camera2D):
-        originScreen = camera.ToScreen(self.transform.position)
-        pygame.draw.rect(camera.screen, self.color, pygame.rect.Rect(originScreen[0],originScreen[1],self.size,self.size))
+        originScreen = camera.Vec2Screen(self.transform.position)
+        pygame.draw.rect(camera.screen, self.color, pygame.rect.Rect(
+                originScreen[0],
+                originScreen[1],
+                camera.toScreenSpace(self.size),
+                camera.toScreenSpace(self.size)
+            ))

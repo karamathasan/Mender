@@ -12,15 +12,15 @@ screen = pygame.display.set_mode((1280, 720))
 
 clock = pygame.time.Clock()
 running = True
-fps = 60
+fps = 600
 
 # Scene setup
-circle = Circle(1,gravity_enabled=False)
+circle = Circle(1,gravity_enabled=True)
 circle.dynamics.set(velocity=np.array([1,0]))
 
-scene = Scene2D(circle, screen=screen)
-# scene.add(Square(20, 5, transform=Transform2D(np.array([40,0]),0),color = "red"))
-
+scene = Scene2D(circle, screen=screen, fps=fps)
+# scene.add(Square(1, 10, transform=Transform2D(np.array([10,0]),0),color = "red"))
+# scene.camera.width = 1280
 # cube = Cube(100)
 # _3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
 # _3dscene.add(cube)
@@ -40,7 +40,7 @@ while running:
 
     # flip() the display to put your work on screen
     pygame.display.flip()
-    clock.tick(fps)  
+    clock.tick(fps)  # source of bug
 
 pygame.quit()
 

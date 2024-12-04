@@ -76,12 +76,11 @@ class Dynamics3D(Dynamics):
         self.forces = {}
 
     def set(self, velocity: np.ndarray = None, acceleration: np.ndarray = None):
-        assert(velocity.shape == (3,))
-        assert(acceleration.shape == (3,))
-
         if velocity is not None:
+            assert(velocity.shape == (3,))
             self.velocity = velocity
         if acceleration is not None:
+            assert(acceleration.shape == (3,))
             self.acceleration = acceleration
     
     def addForce(self, force: Force3D):

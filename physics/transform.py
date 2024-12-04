@@ -28,6 +28,9 @@ class Transform2D(Transform):
 
     def rotate(self, degrees):
         self.orientation += degrees
+
+    def __str__(self):
+        return f"Transform: {str(self.position)} facing: {str(self.orientation)}"
         
 # /////// 3D TRANSFORMS ARE NOT DEFINED YET BECAUSE QUATERNIONS AND ORIENTATION ARE NOT DEFINED!!!! //////
 class Transform3D(Transform):
