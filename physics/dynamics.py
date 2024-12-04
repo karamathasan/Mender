@@ -31,22 +31,21 @@ class Dynamics2D(Dynamics):
             self.velocity = np.array([0.0,0.0])
         else: 
             assert(velocity.shape == (2,))
-            self.velocity = velocity
+            self.velocity = np.float64(velocity)
         if acceleration is None:
             self.acceleration = np.array([0.0,0.0])
         else: 
             assert(acceleration.shape == (2,))
-            self.acceleration = acceleration
+            self.acceleration = np.float64(acceleration)
         self.forces = {}
 
     def set(self, velocity: np.ndarray = None, acceleration: np.ndarray = None):
-        assert(velocity.shape == (2,))
-        assert(acceleration.shape == (2,))
-
         if velocity is not None:
-            self.velocity = velocity
+            assert(velocity.shape == (2,))
+            self.velocity = np.float64(velocity)
         if acceleration is not None:
-            self.acceleration = acceleration
+            assert(acceleration.shape == (2,))
+            self.acceleration = np.float64(acceleration)
 
     def addForce(self, force: Force2D):
         if force.forceMode == "impulse":

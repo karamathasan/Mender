@@ -17,8 +17,7 @@ class ExplicitEuclid2D(Solver):
         transform = entity.transform
         v = dyn.velocity
         a = entity.dynamics.netAcceleration()
-        print(v)
 
-        transform.shift(v * self.deltaTime)
         v += a * self.deltaTime
-        dyn.set(v, a)
+        transform.shift(v * self.deltaTime)
+        # dyn.set(v, a)

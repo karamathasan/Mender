@@ -15,7 +15,9 @@ running = True
 fps = 60
 
 # Scene setup
-circle = Circle(1)
+circle = Circle(1,gravity_enabled=False)
+circle.dynamics.set(velocity=np.array([1,0]))
+
 scene = Scene2D(circle, screen=screen)
 # scene.add(Square(20, 5, transform=Transform2D(np.array([40,0]),0),color = "red"))
 
@@ -25,22 +27,20 @@ scene = Scene2D(circle, screen=screen)
 
 while running:
     # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
     # RENDER YOUR GAME HERE
 
-    scene.render()
     scene.physicsStep()
+    scene.render()
     # _3dscene.render()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
-    clock.tick(fps)  # limits FPS to 60
+    clock.tick(fps)  
 
 pygame.quit()
 
