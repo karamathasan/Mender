@@ -34,7 +34,7 @@ class Cube(Entity3D):
 
     def draw(self, camera):
         # draw lines between the correct vertices
-        screenVertices = [camera.ToScreen(vertex) for vertex in self.vertices]
+        screenVertices = [camera.Vec2Screen(vertex) for vertex in self.vertices]
 
         # print(str(screenVertices[4]) + " true: " + str(self.vertices[4]))
         # print(str(screenVertices[2]) + " true: " + str(self.vertices[2]))
@@ -56,7 +56,7 @@ class Cube(Entity3D):
         pygame.draw.aaline(camera.screen, self.color, screenVertices[5], screenVertices[7])
         pygame.draw.aaline(camera.screen, self.color, screenVertices[6], screenVertices[7])
 
-        pygame.draw.circle(camera.screen, self.color, camera.ToScreen(np.array([0,0,0])), 1)
+        pygame.draw.circle(camera.screen, self.color, camera.Vec2Screen(self.transform.position), 1)
         # pygame.draw.aaline(camera.screen, self.color, screenVertices[3], screenVertices[5]) # this line is wrong
 
 

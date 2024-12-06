@@ -55,8 +55,11 @@ class Camera3D(Camera):
 
 # may divide this further into a ray marching and ray tracing camera
 class Perspective3D(Camera3D):
-    def __init__(self, screen, transform: Transform3D = None, near_clip = 0.1, far_clip = 100, fov = 54):
+    def __init__(self, screen, near_clip = 0.1, far_clip = 100, fov = 54, aspect_ratio: float = 16/9, transform: Transform3D = None):
         self.screen = screen
+        self.fov = fov
+        self.aspect = aspect_ratio
+        
         if transform is None:
             self.transform = Transform3D(np.array([0,0,0]),np.array([0,1,0]))
         self.transform = transform
@@ -72,20 +75,26 @@ class Perspective3D(Camera3D):
         return pygame.Vector2(pygX,pygY)
 
 class Orthographic3D(Camera3D):
-    def __init__(self, screen, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
+    def __init__(self, screen, camera_width = 30, aspect_ratio: float = 16/9,transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
         self.screen = screen
+        self.width = camera_width
+        self.aspect = aspect_ratio
+
         if transform is None:
             self.transform = Transform3D(np.array([0,0,0]),np.array([0,1,0]))
         else: 
             self.transform = transform
 
-    def Vec2Screen(self, coordinate):
+    def Vec2Screen(self, vec: np.ndarray):
+        assert vec.shape == (3,)
         # 1280 x 720
-        diff = coordinate - self.transform.position 
-        dist = np.dot(self.transform.orientation, np.linalg.norm(diff)) 
-
-        projection = coordinate - dist * self.transform.orientation - self.transform.position
         size = self.screen.get_size()
-        pygX = size[0]/2 + projection[0]
-        pygY = size[1]/2 - projection[1]
+        pygX = size[0]/2 + self.toScreenSpace(vec[0])
+        pygY = size[1]/2 - self.toScreenSpace(vec[1])
         return pygame.Vector2(pygX,pygY)
+    
+    def toScreenSpace(self, length: float):
+        """
+        converts a length from the worldspace coordinate system to the screenspace
+        """
+        return int(length * self.screen.get_size()[0] / self.width)
