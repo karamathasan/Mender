@@ -3,7 +3,9 @@ import numpy as np
 from scene import Scene, Scene2D, Scene3D, Orthographic3D
 from entities._2D.circle import Circle
 from entities._2D.square import Square
-from entities._3D.cube import Cube
+from entities._3D.cube import Cube as CubeEntity
+from elements._3D.cube import Cube as CubeElement
+
 from physics.transform import Transform2D
 
 # pygame setup
@@ -21,7 +23,7 @@ fps = 600
 # scene = Scene2D(circle, screen=screen, fps=fps)
 # scene.add(Square(1, 10, transform=Transform2D(np.array([10,0]),0),color = "red"))
 
-cube = Cube(1)
+cube = CubeElement(1)
 _3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
 _3dscene.add(cube)
 

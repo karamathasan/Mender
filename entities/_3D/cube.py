@@ -21,28 +21,34 @@ class Cube(Entity3D):
             self.transform = Transform3D()
         else: self.transform = transform
 
-        ooo=    self.transform.position
-        loo=    self.transform.position + np.array([size,0,0])
-        olo=    self.transform.position + np.array([0,size,0])
-        ool=    self.transform.position + np.array([0,0,size])
-        llo=    self.transform.position + np.array([size,size,0])
-        lol=    self.transform.position + np.array([size,0,size])
-        oll=    self.transform.position + np.array([0,size,size])
-        lll=    self.transform.position + np.array([size,size,size])
+        s = size * np.sqrt(2)/2
+        self.vertices = [
+            self.transform.position + np.array([-s,-s,-s]), # 0
+            self.transform.position + np.array([s,-s,-s]), # 1
+
+            self.transform.position + np.array([s,-s,s]), # 2
+            self.transform.position + np.array([-s,-s,s]), # 3
+
+            self.transform.position + np.array([-s,s,-s]), # 4
+            self.transform.position + np.array([s,s,-s]), # 5
+
+            self.transform.position + np.array([s,s,s]), # 6
+            self.transform.position + np.array([-s,s,s]), # 7
+        ]
 
         self.edges=[
-            Edge3D(ooo,loo),
-            Edge3D(ooo,olo),
-            Edge3D(ooo,ool),
-            Edge3D(loo,llo),
-            Edge3D(loo,lol),
-            Edge3D(olo,llo),
-            Edge3D(olo,oll),
-            Edge3D(ool,oll),
-            Edge3D(ool,lol),
-            Edge3D(llo,lll),
-            Edge3D(lol,lll),
-            Edge3D(oll,lll),
+            Edge3D(self.vertices[0],self.vertices[1]),
+            Edge3D(self.vertices[0],self.vertices[4]),
+            Edge3D(self.vertices[0],self.vertices[3]),
+            Edge3D(self.vertices[1],self.vertices[5]),
+            Edge3D(self.vertices[1],self.vertices[2]),
+            Edge3D(self.vertices[4],self.vertices[5]),
+            Edge3D(self.vertices[4],self.vertices[7]),
+            Edge3D(self.vertices[3],self.vertices[7]),
+            Edge3D(self.vertices[3],self.vertices[2]),
+            Edge3D(self.vertices[5],self.vertices[6]),
+            Edge3D(self.vertices[2],self.vertices[6]),
+            Edge3D(self.vertices[7],self.vertices[6]),
         ]
 
     

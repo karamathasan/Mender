@@ -1,4 +1,5 @@
 import numpy as np
+from rendering.quaternion import Quaternion
 
 class Transform():
     def __init__(self):
@@ -32,20 +33,19 @@ class Transform2D(Transform):
     def __str__(self):
         return f"Transform: {str(self.position)} facing: {str(self.orientation)}"
         
-# /////// 3D TRANSFORMS ARE NOT DEFINED YET BECAUSE QUATERNIONS AND ORIENTATION ARE NOT DEFINED!!!! //////
 class Transform3D(Transform):
     """
     An object used to hold information about elements and entities in 2D world space
     """
-    def __init__(self, position: np.ndarray = None, orientation: np.ndarray = None):
+    def __init__(self, position: np.ndarray = None, orientation: Quaternion = None):
         """
         Creates a transform object that holds the position and orientation.
         Parameters:
             position: 3D vector of the position in world-space
-            orientation: the Euler angles of the object to represent its orientation
+            orientation: the quaternion that represents the rotation from global axes to this transforms local axes
         """
         if position is None:
-            self.position = np.array([0.0,0,0.0])
+            self.position = np.array([0.0,0.0,0.0])
         else: self.position = np.float64(position)
         if orientation is None:
             self.orientation = np.array([1.0,0.0,0.0])
@@ -54,5 +54,7 @@ class Transform3D(Transform):
     def shift(self, vec):
         self.position += vec
 
-    def rotate(self, degrees):
-        Exception("Not implemented!")
+    def rotate(self, degrees: float, axis: np.ndarray):
+        q = Quaternion.fromAxis(degrees,axis)
+        self.orientation = q * self.orientation * q.conjugate()
+        # Exception("Not implemented!")
