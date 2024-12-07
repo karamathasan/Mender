@@ -49,7 +49,7 @@ class Scene2D(Scene):
         # update all physics objects in the scene
         return
 
-# Note: +Y axis faces into the screen, +Z is up and +X is to the right
+# Note: +Z axis faces into the screen, +Y is up and +X is to the right
 class Scene3D(Scene):
     def __init__(self, *args: Element3D, screen, camera: Camera3D = None):
         self.elements = list(args)

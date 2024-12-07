@@ -81,7 +81,7 @@ class Orthographic3D(Camera3D):
         self.aspect = aspect_ratio
 
         if transform is None:
-            self.transform = Transform3D(np.array([0,0,0]),np.array([0,1,0]))
+            self.transform = Transform3D()
         else: 
             self.transform = transform
 

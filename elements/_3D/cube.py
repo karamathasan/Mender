@@ -3,6 +3,7 @@ import numpy as np
 from element import Element3D
 from physics.transform import Transform3D
 from rendering.edge import Edge3D
+from rendering.quaternion import Quaternion
 
 class Cube(Element3D):
 
@@ -24,11 +25,11 @@ class Cube(Element3D):
             self.transform.position + np.array([-s,-s,-s]), # 0
             self.transform.position + np.array([s,-s,-s]), # 1
 
-            self.transform.position + np.array([s,-s,s]), # 2
-            self.transform.position + np.array([-s,-s,s]), # 3
+            self.transform.position + np.array([s,s,-s]), # 2
+            self.transform.position + np.array([-s,s,-s]), # 3
 
-            self.transform.position + np.array([-s,s,-s]), # 4
-            self.transform.position + np.array([s,s,-s]), # 5
+            self.transform.position + np.array([-s,-s,s]), # 4
+            self.transform.position + np.array([s,-s,s]), # 5
 
             self.transform.position + np.array([s,s,s]), # 6
             self.transform.position + np.array([-s,s,s]), # 7
@@ -51,18 +52,13 @@ class Cube(Element3D):
 
 
     def draw(self, camera):
-        # draw lines between the correct vertices
-        screenVertices = [camera.Vec2Screen(vertex) for vertex in self.vertices]
-
-        # print(str(screenVertices[4]) + " true: " + str(self.vertices[4]))
-        # print(str(screenVertices[2]) + " true: " + str(self.vertices[2]))
-        # print(str(screenVertices[0]) + " true: " + str(self.vertices[0]))
-        # print("")
+        screenVertices = [self.transform.orientation * Quaternion.Vec2Quaternion(vertex) * self.transform.orientation.conjugate() for vertex in self.vertices]
+        screenVertices = [camera.Vec2Screen(vertex.toVec()) for vertex in screenVertices]
 
         pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[1])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[2])
+        pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[3])
         pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[4])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[1], screenVertices[3])
+        pygame.draw.aaline(camera.screen, self.color, screenVertices[1], screenVertices[2])
         pygame.draw.aaline(camera.screen, self.color, screenVertices[1], screenVertices[5])
 
         pygame.draw.aaline(camera.screen, self.color, screenVertices[2], screenVertices[3])
@@ -70,8 +66,8 @@ class Cube(Element3D):
 
         pygame.draw.aaline(camera.screen, self.color, screenVertices[3], screenVertices[7])
         pygame.draw.aaline(camera.screen, self.color, screenVertices[4], screenVertices[5])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[4], screenVertices[6])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[5], screenVertices[7])
+        pygame.draw.aaline(camera.screen, self.color, screenVertices[4], screenVertices[7])
+        pygame.draw.aaline(camera.screen, self.color, screenVertices[5], screenVertices[6])
         pygame.draw.aaline(camera.screen, self.color, screenVertices[6], screenVertices[7])
 
         pygame.draw.circle(camera.screen, self.color, camera.Vec2Screen(self.transform.position), 1)

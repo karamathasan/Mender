@@ -48,13 +48,13 @@ class Transform3D(Transform):
             self.position = np.array([0.0,0.0,0.0])
         else: self.position = np.float64(position)
         if orientation is None:
-            self.orientation = np.array([1.0,0.0,0.0])
+            self.orientation = Quaternion()
         else: self.orientation = orientation
     
     def shift(self, vec):
         self.position += vec
 
     def rotate(self, degrees: float, axis: np.ndarray):
+        assert axis.shape == (3,)
         q = Quaternion.fromAxis(degrees,axis)
-        self.orientation = q * self.orientation * q.conjugate()
-        # Exception("Not implemented!")
+        self.orientation = q * self.orientation 

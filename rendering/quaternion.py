@@ -10,13 +10,13 @@ class Quaternion():
         self.k = k        
 
         if r is None:
-            self.r = 1 
+            self.r = 0.0
         if i is None:
-            self.i = 0 
+            self.i = 1.0
         if j is None:
-            self.j = 0 
+            self.j = 0.0
         if k is None:
-            self.k = 0 
+            self.k = 0.0
 
 
     @staticmethod
@@ -28,8 +28,8 @@ class Quaternion():
             axis: axis of rotation. Does not have to normalized
         """
         assert axis.shape == (3,)
-        r = np.cos(np.radians(degrees)/2)
-        i,j,k = np.sin(np.radians(degrees)/2) * np.linalg.norm(axis)
+        r = np.cos(np.radians(degrees/2))
+        i,j,k = np.sin(np.radians(degrees/2)) * axis / np.linalg.norm(axis)
         return Quaternion(r,i,j,k)
     
     @staticmethod
@@ -39,10 +39,13 @@ class Quaternion():
         """
         assert vec.shape[0] == 3
         return Quaternion(0,vec[0],vec[1],vec[2])
+    
+    def toVec(self):
+        return np.array([self.i, self.j, self.k])
 
     def __mul__(self, other):
         if isinstance(other, float):
-            pass
+            return Quaternion(self.r * other, self.i * other, self.j * other, self.k * other)
         elif isinstance(other, Quaternion):
             return Quaternion(
                 self.r * other.r - self.i * other.i - self.j * other.j - self.k * other.k,
@@ -51,7 +54,7 @@ class Quaternion():
                 self.r * other.k + self.i * other.j - self.j * other.i + self.k * other.r 
             )
     
-    def __div__(self, other):
+    def __truediv__(self, other):
         if isinstance(other, Quaternion):
             assert Quaternion.i == 0 and Quaternion.j == 0 and Quaternion.k == 0, "Quaternion could not be cast to scalar"
             other = Quaternion.r
@@ -64,11 +67,11 @@ class Quaternion():
         self = Quaternion(self.r, -self.i, -self.j, -self.k)
         return self
 
-    def __len__(self):
+    def len(self):
         """
         Returns the norm of this quaternion
         """
-        return np.sqrt(self.r + self.r + self.i * self.i + self.j * self.j + self.k * self.k)
+        return np.sqrt(self.r * self.r + self.i * self.i + self.j * self.j + self.k * self.k)
 
     def __invert__(self):
         self = self.conjugate() / self * self.conjugate()

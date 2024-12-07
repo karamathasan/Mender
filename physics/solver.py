@@ -1,6 +1,7 @@
 from abc import ABC
 import numpy as np
 from physics.entity import Entity, Entity2D
+from rendering.quaternion import Quaternion
 
 class Solver(ABC):
     def __init__(self, fps):
