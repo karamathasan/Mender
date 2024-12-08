@@ -22,17 +22,17 @@ class Cube(Element3D):
         # needs to account for orientation
         s = size * np.sqrt(2)/2
         self.vertices = [
-            self.transform.position + np.array([-s,-s,-s]), # 0
-            self.transform.position + np.array([s,-s,-s]), # 1
+            np.array([-s,-s,-s]), # 0
+            np.array([s,-s,-s]), # 1
 
-            self.transform.position + np.array([s,s,-s]), # 2
-            self.transform.position + np.array([-s,s,-s]), # 3
+            np.array([s,s,-s]), # 2
+            np.array([-s,s,-s]), # 3
 
-            self.transform.position + np.array([-s,-s,s]), # 4
-            self.transform.position + np.array([s,-s,s]), # 5
+            np.array([-s,-s,s]), # 4
+            np.array([s,-s,s]), # 5
 
-            self.transform.position + np.array([s,s,s]), # 6
-            self.transform.position + np.array([-s,s,s]), # 7
+            np.array([s,s,s]), # 6
+            np.array([-s,s,s]), # 7
         ]
 
         self.edges=[
@@ -52,7 +52,7 @@ class Cube(Element3D):
 
 
     def draw(self, camera):
-        screenVertices = [self.transform.orientation * Quaternion.Vec2Quaternion(vertex) * self.transform.orientation.conjugate() for vertex in self.vertices]
+        screenVertices = [self.transform.orientation * Quaternion.Vec2Quaternion(self.transform.position + vertex) * self.transform.orientation.conjugate() for vertex in self.vertices]
         screenVertices = [camera.Vec2Screen(vertex.toVec()) for vertex in screenVertices]
 
         pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[1])

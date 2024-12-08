@@ -15,7 +15,7 @@ class Gravity2D(Constraint2D):
 
 class Gravity3D(Constraint3D):
     def __init__(self, acceleration_magnitude = 9.81):
-        self.gravity = Force3D(acceleration_magnitude, np.array([0,0,-1]))
+        self.gravity = Force3D(acceleration_magnitude, np.array([0,-1,0]))
 
     def accept(self, entity):
         # needs to make sure that there a gravity vector always present on the objects that this is applied to

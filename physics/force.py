@@ -51,6 +51,7 @@ class Force2D(Force):
     def __str__(self):
         return f"Force2D {self.magnitude}N pointing {self.direction}"
     
+    @staticmethod
     def zero():
         return Force2D(0, np.array([1,0]))
     
@@ -60,7 +61,8 @@ class Force2D(Force):
 
 class Force3D(Force):
     def __init__(self, magnitude: float, direction: np.ndarray, duration = None):
-        assert magnitude
+        assert magnitude is not None
+        assert direction is not None
         self.magnitude = magnitude
         if duration is None:
             self.forceMode = "momentary"
@@ -69,8 +71,15 @@ class Force3D(Force):
             self.forceMode = "impulse"
             self.duration = duration # may need some changes
         assert(direction.shape == (3,))
-        self.direction = direction
+        self.direction = direction/np.linalg.norm(direction)
 
     @staticmethod
     def vec2Force(vec: np.ndarray):
         return Force3D(np.linalg.norm(vec), vec/np.linalg.norm(vec))
+    
+    @staticmethod
+    def zero():
+        return Force3D(0, np.array([1,0,0]))
+
+    def __str__(self):
+        return f"Force3D {self.magnitude}N pointing {self.direction}"

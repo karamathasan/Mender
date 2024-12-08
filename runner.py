@@ -15,7 +15,7 @@ screen = pygame.display.set_mode((1280, 720))
 
 clock = pygame.time.Clock()
 running = True
-fps = 600
+fps = 60
 
 # Scene setup
 # circle = Circle(1,gravity_enabled=True)
@@ -24,11 +24,11 @@ fps = 600
 # scene = Scene2D(circle, screen=screen, fps=fps)
 # scene.add(Square(1, 10, transform=Transform2D(np.array([10,0]),0),color = "red"))
 
-cube = CubeElement(1)
+cube = CubeEntity(1, gravity_enabled=False)
+cube.dynamics.set(angular_velocity= 50 * np.array([1,1,0]))
 # cube.transform.orientation=Quaternion.fromAxis(30, np.array([1,0,0]))
 # cube.transform.rotate(45, np.array([0.0,1.0,1.0]))
-_3dscene = Scene3D(screen=screen, camera=Orthographic3D(screen=screen))
-_3dscene.add(cube)
+_3dscene = Scene3D(cube, screen=screen, camera=Orthographic3D(screen=screen))
 
 while running:
     # poll for events
@@ -42,6 +42,7 @@ while running:
     # scene.physicsStep()
     # scene.render()
     _3dscene.render()
+    _3dscene.physicsStep()
 
     # flip() the display to put your work on screen
     pygame.display.flip()

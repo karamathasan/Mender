@@ -52,6 +52,7 @@ class Transform3D(Transform):
         else: self.orientation = orientation
     
     def shift(self, vec):
+        assert vec.shape == (3,)
         self.position += vec
 
     def rotate(self, degrees: float, axis: np.ndarray):
