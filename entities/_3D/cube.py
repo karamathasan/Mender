@@ -38,41 +38,20 @@ class Cube(Entity3D):
         ]
 
         self.edges=[
-            Edge3D(self.vertices[0],self.vertices[1]),
-            Edge3D(self.vertices[0],self.vertices[4]),
-            Edge3D(self.vertices[0],self.vertices[3]),
-            Edge3D(self.vertices[1],self.vertices[5]),
-            Edge3D(self.vertices[1],self.vertices[2]),
-            Edge3D(self.vertices[4],self.vertices[5]),
-            Edge3D(self.vertices[4],self.vertices[7]),
-            Edge3D(self.vertices[3],self.vertices[7]),
-            Edge3D(self.vertices[3],self.vertices[2]),
-            Edge3D(self.vertices[5],self.vertices[6]),
-            Edge3D(self.vertices[2],self.vertices[6]),
-            Edge3D(self.vertices[7],self.vertices[6]),
+            Edge3D(self.vertices[0],self.vertices[1],self.transform),
+            Edge3D(self.vertices[0],self.vertices[3],self.transform),
+            Edge3D(self.vertices[0],self.vertices[4],self.transform),
+            Edge3D(self.vertices[1],self.vertices[2],self.transform),
+            Edge3D(self.vertices[1],self.vertices[5],self.transform),
+            Edge3D(self.vertices[2],self.vertices[3],self.transform),
+            Edge3D(self.vertices[2],self.vertices[6],self.transform),
+            Edge3D(self.vertices[3],self.vertices[7],self.transform),
+            Edge3D(self.vertices[4],self.vertices[5],self.transform),
+            Edge3D(self.vertices[4],self.vertices[7],self.transform),
+            Edge3D(self.vertices[5],self.vertices[6],self.transform),
+            Edge3D(self.vertices[6],self.vertices[7],self.transform)
         ]
 
-    
     def draw(self, camera: Camera3D):
-        screenVertices = [self.transform.orientation * Quaternion.Vec2Quaternion(self.transform.position + vertex) * self.transform.orientation.conjugate() for vertex in self.vertices]
-        screenVertices = [camera.Vec2Screen(vertex.toVec()) for vertex in screenVertices]
-        
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[1])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[3])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[0], screenVertices[4])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[1], screenVertices[2])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[1], screenVertices[5])
-
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[2], screenVertices[3])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[2], screenVertices[6])
-
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[3], screenVertices[7])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[4], screenVertices[5])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[4], screenVertices[7])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[5], screenVertices[6])
-        pygame.draw.aaline(camera.screen, self.color, screenVertices[6], screenVertices[7])
-
-        # for edge in self.edges:
-        #     a = camera.Vec2Screen(self.transform.position + edge.vertices[0]) 
-        #     b = camera.Vec2Screen(self.transform.position + edge.vertices[1]) 
-        #     pygame.draw.line(camera.screen, self.color, a,b)
+        for edge in self.edges:
+            edge.draw(camera)

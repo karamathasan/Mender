@@ -139,6 +139,7 @@ class Dynamics3D(Dynamics):
         sum = Force3D.zero()
         for force in self.forces.keys():
             sum += force
+            # self.forces[force] -= 1
         return sum
 
     def addTorque(self, torque: Torque3D):
@@ -151,4 +152,4 @@ class Dynamics3D(Dynamics):
         sum = Torque3D.zero()
         for torque in self.torques.keys():
             sum += torque
-        return Torque3D
+        return sum

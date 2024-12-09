@@ -10,9 +10,9 @@ class Quaternion():
         self.k = k        
 
         if r is None:
-            self.r = 0.0
+            self.r = 1.0
         if i is None:
-            self.i = 1.0
+            self.i = 0.0
         if j is None:
             self.j = 0.0
         if k is None:
@@ -28,6 +28,7 @@ class Quaternion():
             axis: axis of rotation. Does not have to normalized
         """
         assert axis.shape == (3,)
+        assert np.linalg.norm(axis) > 0.0001
         r = np.cos(np.radians(degrees/2))
         i,j,k = np.sin(np.radians(degrees/2)) * axis / np.linalg.norm(axis)
         return Quaternion(r,i,j,k)
