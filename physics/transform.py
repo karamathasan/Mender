@@ -59,3 +59,9 @@ class Transform3D(Transform):
         assert axis.shape == (3,)
         q = Quaternion.fromAxis(degrees,axis)
         self.orientation = q * self.orientation 
+
+    def face(self, orientation: Quaternion):
+        self.orientation = orientation
+
+    def __str__(self):
+        return f"Transform: {str(self.position)} facing: {str(self.orientation)}"

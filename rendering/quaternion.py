@@ -37,6 +37,9 @@ class Quaternion():
     def Vec2Quaternion(vec: np.ndarray):
         """
         Creates a quaternion given a 3D coordinate/vector
+
+        Parameters:
+            vec: the vector in world space to be rotated
         """
         assert vec.shape[0] == 3
         return Quaternion(0,vec[0],vec[1],vec[2])

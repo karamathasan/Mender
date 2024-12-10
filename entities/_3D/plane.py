@@ -19,4 +19,5 @@ class Plane3D(Entity3D):
         # very laggy
         for i in range(self.size):
             for j in range(self.size):
-                pygame.draw.circle(camera.screen, self.color, camera.Vec2Screen(self.transform.position + np.array([10 * (i - self.size/2), 0,10 * j])), 1)
+                if camera.Vec2Screen(self.transform.position + np.array([10 * (i - self.size/2), 0, 10 * (j - self.size/2)])) is not None:
+                    pygame.draw.circle(camera.screen, self.color, camera.Vec2Screen(self.transform.position + np.array([10 * (i - self.size/2), 0, 10 * (j - self.size/2)])), 1)

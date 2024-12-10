@@ -35,7 +35,6 @@ class Scene2D(Scene):
         else:
             self.solver = solver
         
-
     def add(self, *args: Element2D):
         self.elements.extend(args)
 
@@ -50,12 +49,12 @@ class Scene2D(Scene):
         # update all physics objects in the scene
         return
 
-# Note: +Z axis faces into the screen, +Y is up and +X is to the right
+# Note: +Z axis faces out of the screen, +Y is up and +X is to the right
 class Scene3D(Scene):
     def __init__(self, *args: Element3D, screen, camera: Camera3D = None, solver: Solver = None, fps = 60):
         self.elements = list(args)
         if camera is None:
-            self.camera = Camera3D(screen) # using a generic type may cause problems
+            self.camera = Orthographic3D(screen) # using a generic type may cause problems
         else: 
             self.camera = camera
         self.fps = fps

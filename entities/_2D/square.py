@@ -7,7 +7,7 @@ import pygame
 import numpy as np
 
 class Square(Entity2D):
-    def __init__(self, size, color = "white", mass = 10.0, transform : Transform2D = None, dynamics:Dynamics2D = None, gravity_enabled = True):
+    def __init__(self, size, color: str = "white", mass = 10.0, transform : Transform2D = None, dynamics:Dynamics2D = None, gravity_enabled = True):
         '''
         Parameters:
             size: the side length of the square 
