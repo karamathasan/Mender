@@ -28,21 +28,23 @@ fps = 60
 # scene.add(Square(1,"blue", 10, transform=Transform2D(np.array([1,0]),0)))
 
 cube = CubeEntity(1, gravity_enabled=False)
-sphere = Sphere3D()
+# cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,1,0]))
+# cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,0,1]))
+sphere = Sphere3D(2)
 sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 # cube2 = CubeEntity(1, gravity_enabled=False)
 # cube2.transform.shift(np.array([0,0,-10]))
 
-cube.dynamics.set(angular_velocity= 50 * np.array([0,0,1]))
+cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
 # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
 camera = Perspective3D(screen)
 # camera = Orthographic3D(screen)
-camera.transform.shift(np.array([0,0,5]))
+# camera.transform.shift(np.array([0,0,5]))
 
 # camera.transform.rotate(30, np.array([0,0,1]))
-_3dscene = Scene3D(cube, sphere, screen=screen, camera=camera, fps=fps)
+_3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
 # _3dscene = Scene3D(cube, screen=screen, camera=perspectiveCam, fps=fps)
 
 elapsed_time = 0

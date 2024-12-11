@@ -53,19 +53,17 @@ class Cube(Entity3D):
         ]
 
         self.faces = [
-            Triangle.fromQuad(self.vertices[0],self.vertices[1],self.vertices[2],self.vertices[3]),
-            Triangle.fromQuad(self.vertices[2],self.vertices[5],self.vertices[6],self.vertices[3]),
-            Triangle.fromQuad(self.vertices[5],self.vertices[4],self.vertices[7],self.vertices[6]),
-            Triangle.fromQuad(self.vertices[4],self.vertices[0],self.vertices[3],self.vertices[7]),
-            Triangle.fromQuad(self.vertices[3],self.vertices[2],self.vertices[7],self.vertices[6]),
-            Triangle.fromQuad(self.vertices[4],self.vertices[5],self.vertices[1],self.vertices[0])
-            # Triangle.fromQuad(self.vertices[],self.vertices[],self.vertices[],self.vertices[]),
-            # Triangle.fromQuad(self.vertices[],self.vertices[],self.vertices[],self.vertices[])
+            Triangle.fromQuad(self.vertices[0],self.vertices[1],self.vertices[2],self.vertices[3], parent=self.transform),
+            Triangle.fromQuad(self.vertices[1],self.vertices[5],self.vertices[6],self.vertices[2], parent=self.transform),
+            Triangle.fromQuad(self.vertices[5],self.vertices[4],self.vertices[7],self.vertices[6], parent=self.transform),
+            Triangle.fromQuad(self.vertices[4],self.vertices[0],self.vertices[3],self.vertices[7], parent=self.transform),
+            Triangle.fromQuad(self.vertices[3],self.vertices[2],self.vertices[6],self.vertices[7], parent=self.transform),
+            Triangle.fromQuad(self.vertices[4],self.vertices[5],self.vertices[1],self.vertices[0], parent=self.transform)
         ]
 
     def draw(self, camera: Camera3D):
-        # for edge in self.edges:
-            # edge.draw(camera)
         for face in self.faces:
             face[0].draw(camera)
             face[1].draw(camera)
+        for edge in self.edges:
+            edge.draw(camera)

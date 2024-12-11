@@ -5,9 +5,11 @@ from rendering.quaternion import Quaternion
 from abc import ABC
 
 class Camera(ABC):
-    def __init__(self, screen: pygame.Surface, width):
+    def __init__(self, screen: pygame.Surface, width, aspect_ratio = 16/9):
         self.screen = screen
         self.width = width
+        self.pxarray = pygame.PixelArray(screen)
+        self.aspect = aspect_ratio
         pass
 
     def render(self, element):
@@ -28,14 +30,12 @@ class Camera2D(Camera):
     
     Parameters:
         screen:  Pygame surface, the screen were the camera will output to
-        camera_width: the width of the camera in meters (its viewport width is equal to this amount)
+        width: the width of the camera in meters (its viewport width is equal to this amount)
         aspect_ratio: the ratio between the width and the height (16/9 by default)
         transform: the Transform2D associated with the camera in worldspace 
     '''
-    def __init__(self, screen: pygame.Surface, camera_width = 30, aspect_ratio: float = 16/9, transform: Transform2D = None):
-        self.screen = screen
-        self.width = camera_width
-        self.aspect = aspect_ratio
+    def __init__(self, screen: pygame.Surface, width = 30, aspect_ratio: float = 16/9, transform: Transform2D = None):
+        super().__init__(screen, width, aspect_ratio)
 
         if transform is None:
             self.transform = Transform2D(np.array([0,0]),0)
@@ -56,13 +56,31 @@ class Camera2D(Camera):
         return int(length * self.screen.get_size()[0] / self.width)
 
 class Camera3D(Camera):
-    def __init__(self, screen: pygame.Surface, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
-        self.screen = screen
+    def __init__(self, screen: pygame.Surface, width: float, aspect_ratio: float = 16/9 ,transform: Transform3D = None, near_clip:float = 0.1, far_clip:float = 100):
+        super().__init__(screen,width,aspect_ratio)
         if transform is None:
-            self.transform = Transform3D()
-        self.transform = transform
+            self.transform = Transform3D([0,0,5])
+        else:
+            self.transform = transform
 
-        self.direction = np.array([0,0,1],dtype=np.float64)
+        self.near_clip = near_clip
+        self.far_clip = far_clip
+
+        self.direction = np.array([0,0,-1],dtype=np.float64)
+
+    def Vec2Screen(self, vec: np.ndarray):
+        assert vec.shape == (3,)
+        v = vec - self.transform.position
+        u = self.direction
+        v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
+        if np.dot(v,u) <= 0:
+            return
+        v = v - u * np.dot(u,v) / np.dot(u,u)
+
+        size = self.screen.get_size()
+        pygX = size[0]/2 + self.toScreenSpace(v[0])
+        pygY = size[1]/2 - self.toScreenSpace(v[1])
+        return pygame.Vector2(pygX,pygY)
         
     def getGlobalDirection(self):
         direction = (self.transform.orientation * Quaternion.Vec2Quaternion(self.direction) * self.transform.orientation.conjugate()).toVec()
@@ -72,13 +90,9 @@ class Perspective3D(Camera3D):
     """
     Creates a camera with perspective
     """
-    def __init__(self, screen:pygame.Surface, near_clip = 0.01, far_clip = 100, fov = 90, aspect_ratio: float = 16/9, transform: Transform3D = None):
-        self.screen = screen
+    def __init__(self, screen:pygame.Surface, aspect_ratio: float = 16/9, near_clip: float = 0.01, far_clip: float = 100, fov = 100, transform: Transform3D = None):
+        super().__init__(screen, 2 * np.tan(np.deg2rad(fov/2)) * near_clip, aspect_ratio, transform, near_clip, far_clip)
         self.fov = fov
-        self.aspect = aspect_ratio
-        self.near_clip = near_clip
-        self.far_clip = far_clip
-        self.width = 2 * np.tan(np.deg2rad(fov/2)) * self.near_clip
         
         if transform is None:
             self.transform = Transform3D(np.array([0,0,5]))
@@ -91,8 +105,10 @@ class Perspective3D(Camera3D):
         v = vec - self.transform.position
         u = self.direction
         v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
-     
-        if not (self.near_clip < np.linalg.norm(u * np.dot(u,v) / np.dot(u,u)) < self.far_clip):
+
+        depth = v[2]
+        # if not (self.near_clip < np.linalg.norm(u * np.dot(u,v) / np.dot(u,u)) < self.far_clip):
+        if not (self.near_clip < -depth < self.far_clip):
             return
         if (np.dot(u,v/np.linalg.norm(v)) < np.cos(self.fov/2) ):
             return 
@@ -105,19 +121,8 @@ class Perspective3D(Camera3D):
         return pygame.Vector2(pygX,pygY)
 
 class Orthographic3D(Camera3D):
-    def __init__(self, screen: pygame.Surface, camera_width = 30, aspect_ratio: float = 16/9, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
-        self.screen = screen
-        self.width = camera_width
-        self.aspect = aspect_ratio
-
-        if transform is None:
-            # by default
-            self.transform = Transform3D(np.array([0,0,5]))
-        else:   
-            self.transform = transform
-
-        self.direction = np.array([0,0,-1],dtype=np.float64)
-
+    def __init__(self, screen: pygame.Surface, width = 30, aspect_ratio: float = 16/9, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
+        super().__init__(screen, width, aspect_ratio, transform, near_clip, far_clip)
 
     def Vec2Screen(self, vec: np.ndarray):
         assert vec.shape == (3,)
