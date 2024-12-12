@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from physics.transform import Transform2D, Transform3D
 from rendering.quaternion import Quaternion
+from rendering.renderer import Painter3D
 from abc import ABC
 
 class Camera(ABC):
@@ -67,6 +68,7 @@ class Camera3D(Camera):
         self.far_clip = far_clip
 
         self.direction = np.array([0,0,-1],dtype=np.float64)
+        self.painter = Painter3D(self)
 
     def Vec2Screen(self, vec: np.ndarray):
         assert vec.shape == (3,)
@@ -85,6 +87,10 @@ class Camera3D(Camera):
     def getGlobalDirection(self):
         direction = (self.transform.orientation * Quaternion.Vec2Quaternion(self.direction) * self.transform.orientation.conjugate()).toVec()
         return direction / np.linalg.norm(direction)
+    
+    def render(self, element):
+        # element.draw(self)
+        self.painter.addTask(element.paint(self))
 
 class Perspective3D(Camera3D):
     """
@@ -93,13 +99,6 @@ class Perspective3D(Camera3D):
     def __init__(self, screen:pygame.Surface, aspect_ratio: float = 16/9, near_clip: float = 0.01, far_clip: float = 100, fov = 100, transform: Transform3D = None):
         super().__init__(screen, 2 * np.tan(np.deg2rad(fov/2)) * near_clip, aspect_ratio, transform, near_clip, far_clip)
         self.fov = fov
-        
-        if transform is None:
-            self.transform = Transform3D(np.array([0,0,5]))
-        else:   
-            self.transform = transform
-
-        self.direction = np.array([0,0,-1],dtype=np.float64)
     
     def Vec2Screen(self, vec):
         v = vec - self.transform.position
@@ -119,6 +118,13 @@ class Perspective3D(Camera3D):
         pygX = size[0]/2 + self.toScreenSpace(v[0])
         pygY = size[1]/2 - self.toScreenSpace(v[1])
         return pygame.Vector2(pygX,pygY)
+    
+    def getDepth(self, vec):
+        v = vec - self.transform.position
+        v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
+        depth = v[2]
+        return depth
+
 
 class Orthographic3D(Camera3D):
     def __init__(self, screen: pygame.Surface, width = 30, aspect_ratio: float = 16/9, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):

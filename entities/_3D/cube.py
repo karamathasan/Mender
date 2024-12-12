@@ -67,3 +67,10 @@ class Cube(Entity3D):
             face[1].draw(camera)
         for edge in self.edges:
             edge.draw(camera)
+
+    def paint(self, camera: Camera3D):
+        tasks = []
+        for face in self.faces:
+            tasks.append(face[0].draw(camera))
+            tasks.append(face[1].draw(camera))
+        return tasks

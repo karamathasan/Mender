@@ -69,6 +69,7 @@ class Scene3D(Scene):
     def render(self):
         for element in self.elements:
             self.camera.render(element)
+        self.camera.painter.drawFaces()
 
     def physicsStep(self):
         for element in self.elements:

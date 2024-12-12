@@ -1,9 +1,10 @@
 import pygame
 import numpy as np
 
-from rendering.edge import Edge2D, Edge3D
+# from rendering.edge import Edge2D, Edge3D
 from rendering.quaternion import Quaternion
-from camera import Camera3D
+from rendering.rendertask import RenderTask
+# from camera import Camera3D
 from physics.transform import Transform3D
 
 class Face():
@@ -33,12 +34,13 @@ class Triangle(Face):
         else:
             self.normal = np.array([1,0,0])
     
-    def draw(self, camera: Camera3D):
+    def draw(self, camera):
         # needs to account for rotations. 
         global_a = self.parent.position + (self.parent.orientation * Quaternion.Vec2Quaternion(self.a) * self.parent.orientation.conjugate()).toVec()
         global_b = self.parent.position + (self.parent.orientation * Quaternion.Vec2Quaternion(self.b) * self.parent.orientation.conjugate()).toVec()
         global_c = self.parent.position + (self.parent.orientation * Quaternion.Vec2Quaternion(self.c) * self.parent.orientation.conjugate()).toVec()
 
+        depth = camera.getDepth((global_a + global_b + global_c)/3)
         screen_a = camera.Vec2Screen(global_a)
         screen_b = camera.Vec2Screen(global_b)
         screen_c = camera.Vec2Screen(global_c)
@@ -48,7 +50,12 @@ class Triangle(Face):
         color = np.array(basecolor * diff, dtype=int)
         r,g,b = color
         # if screen_a and screen_b and screen_c:
-        pygame.draw.polygon(surface=camera.screen, color=(r,g,b), points=[screen_a, screen_b, screen_c])
+        # pygame.draw.polygon(surface=camera.screen, color=(r,g,b), points=[screen_a, screen_b, screen_c])
+        return RenderTask(
+            (screen_a, screen_b, screen_c),
+            (r,g,b),
+            depth
+        )
 
     @staticmethod
     def fromQuad(*points: np.ndarray, parent: Transform3D = None):
