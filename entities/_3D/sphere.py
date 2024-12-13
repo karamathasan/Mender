@@ -48,10 +48,12 @@ class Sphere3D(Entity3D):
                 )
 
     def draw(self, camera):
+        tasks = []
         for quad in self.quads:
-            quad[0].draw(camera)
-            quad[1].draw(camera)
-        for vertex in self.vertices:
-            vertex = (self.transform.orientation * Quaternion.Vec2Quaternion(vertex) * self.transform.orientation.conjugate()).toVec()
-            if camera.Vec2Screen(vertex) is not None:
-                pygame.draw.circle(camera.screen, "red", camera.Vec2Screen(vertex), 1)
+            tasks.append(quad[0].draw(camera))
+            tasks.append(quad[1].draw(camera))
+        return tasks
+        # for vertex in self.vertices:
+        #     vertex = (self.transform.orientation * Quaternion.Vec2Quaternion(vertex) * self.transform.orientation.conjugate()).toVec()
+        #     if camera.Vec2Screen(vertex) is not None:
+        #         pygame.draw.circle(camera.screen, "red", camera.Vec2Screen(vertex), 1)

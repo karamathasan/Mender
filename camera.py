@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 from physics.transform import Transform2D, Transform3D
 from rendering.quaternion import Quaternion
-from rendering.renderer import Painter3D
+from rendering.renderer import Painter3D, Renderer3D
 from abc import ABC
 
 class Camera(ABC):
@@ -68,7 +68,8 @@ class Camera3D(Camera):
         self.far_clip = far_clip
 
         self.direction = np.array([0,0,-1],dtype=np.float64)
-        self.painter = Painter3D(self)
+        # self.painter = Painter3D(self)
+        self.renderer = Renderer3D(self)
 
     def Vec2Screen(self, vec: np.ndarray):
         assert vec.shape == (3,)
@@ -89,8 +90,18 @@ class Camera3D(Camera):
         return direction / np.linalg.norm(direction)
     
     def render(self, element):
-        # element.draw(self)
-        self.painter.addTask(element.paint(self))
+        tasks = []
+        for task in element.draw(self):
+            tasks.append(task)
+        for task in tasks:
+            self.renderer.rasterize(task)
+        self.renderer.clearBuffer()
+
+    def getDepth(self, vec):
+        v = vec - self.transform.position
+        v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
+        depth = -v[2]
+        return depth
 
 class Perspective3D(Camera3D):
     """
@@ -107,24 +118,17 @@ class Perspective3D(Camera3D):
 
         depth = v[2]
         # if not (self.near_clip < np.linalg.norm(u * np.dot(u,v) / np.dot(u,u)) < self.far_clip):
-        if not (self.near_clip < -depth < self.far_clip):
-            return
-        if (np.dot(u,v/np.linalg.norm(v)) < np.cos(self.fov/2) ):
-            return 
+        # if not (self.near_clip < -depth < self.far_clip):
+        #     return
+        # if (np.dot(u,v/np.linalg.norm(v)) < np.cos(self.fov/2) ):
+        #     return 
        
         v = self.near_clip * (v / np.dot(u,v)) - u * self.near_clip
 
         size = self.screen.get_size()
         pygX = size[0]/2 + self.toScreenSpace(v[0])
-        pygY = size[1]/2 - self.toScreenSpace(v[1])
+        pygY = size[1]/2 - self.toScreenSpace(v[1]) # TODO: should account for aspect ratio
         return pygame.Vector2(pygX,pygY)
-    
-    def getDepth(self, vec):
-        v = vec - self.transform.position
-        v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
-        depth = v[2]
-        return depth
-
 
 class Orthographic3D(Camera3D):
     def __init__(self, screen: pygame.Surface, width = 30, aspect_ratio: float = 16/9, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):
@@ -149,3 +153,5 @@ class Orthographic3D(Camera3D):
         converts a length from the plane space coordinate system to the screenspace
         """
         return int(length * self.screen.get_size()[0] / self.width)
+    
+    

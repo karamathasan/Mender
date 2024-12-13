@@ -5,13 +5,18 @@ from abc import ABC
 # from rendering.face import Face, Triangle
 
 class RenderTask():
-    def __init__(self, points: tuple, color: tuple, depth: float):
-        self.depth = depth
+    def __init__(self, points: tuple, depths: tuple, color: tuple):
         self.points = points
+        self.depths = depths
         self.color = color
-
-    def toTuple(self):
-        return (self.depth, self)
+        
+    def avgDepth(self):
+        sum = 0
+        for depth in self.depths:
+            sum += depth
+        return sum/3 
     
+
     def __lt__(self, other):
-        return self.depth < other.depth
+        # for max heap implementation
+        return self.avgDepth() >= other.avgDepth()

@@ -31,7 +31,7 @@ class Scene2D(Scene):
             self.camera = camera
 
         if solver is None:
-            self.solver = ExplicitEuclid2D(fps)
+            self.solver = ExplicitEuclid2D()
         else:
             self.solver = solver
         
@@ -59,7 +59,7 @@ class Scene3D(Scene):
             self.camera = camera
         self.fps = fps
         if solver is None:
-            self.solver = ExplicitEuclid3D(fps)
+            self.solver = ExplicitEuclid3D()
         else:
             self.solver = solver
 
@@ -69,11 +69,10 @@ class Scene3D(Scene):
     def render(self):
         for element in self.elements:
             self.camera.render(element)
-        self.camera.painter.drawFaces()
 
-    def physicsStep(self):
+    def physicsStep(self, dt):
         for element in self.elements:
             if isinstance(element, Entity3D):
-                self.solver.solve(element)
+                self.solver.solve(element, dt)
         # update all physics objects in the scene
         return
