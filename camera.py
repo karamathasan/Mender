@@ -94,8 +94,10 @@ class Camera3D(Camera):
         for task in element.draw(self):
             tasks.append(task)
         for task in tasks:
-            self.renderer.rasterize(task)
+            # self.renderer.rasterize(task)
+            self.renderer.rasterizeParallel(task)
         self.renderer.clearBuffer()
+        self.renderer.updatePixels()
 
     def getDepth(self, vec):
         v = vec - self.transform.position

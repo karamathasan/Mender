@@ -20,3 +20,6 @@ class RenderTask():
     def __lt__(self, other):
         # for max heap implementation
         return self.avgDepth() >= other.avgDepth()
+    
+    def toTuple(self):
+        return (self.points, self.depths, self.color)
