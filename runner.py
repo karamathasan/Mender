@@ -39,8 +39,8 @@ if __name__ == "__main__":
     # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
-    sphere = Sphere3D(1)
-    sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
+    # sphere = Sphere3D(1)
+    # sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
@@ -48,23 +48,21 @@ if __name__ == "__main__":
     # camera.transform.rotate(30, np.array([0,0,1]))
 
     _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
-
     elapsed_time = 0
     dt = 1/fps
 
-    # _3dscene.render()
+    _3dscene.render()
     while running:
         # poll for events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-
         # scene.physicsStep()
         # scene.render()
 
-        _3dscene.render()
-        _3dscene.physicsStep(dt)
+        # _3dscene.render()
+        # _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
 
         pygame.display.flip()

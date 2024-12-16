@@ -5,9 +5,8 @@ from abc import ABC
 # from camera import Camera2D, Camera3D
 from rendering.face import Face, Triangle
 from rendering.rendertask import RenderTask
-from multiprocessing import Process
-from multiprocessing.shared_memory import SharedMemory
 
+import time
 import pyopencl as cl
 """
 the renderer class is meant to interpret the vertex data that the camera took 
@@ -25,13 +24,10 @@ class Renderer3D(Renderer):
         # self.zbuffer = np.full(self.screen.get_size(),np.inf) #not transposed on purpose
         self.zbuffer = np.full(self.screen.get_size(),np.finfo(np.float32).max) #not transposed on purpose
         self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
-        # self.pxarray = np.full(self.screen.get_size(), np.int32(0))
-
-        print(f"zbuffer: {self.zbuffer.shape}")
-        print(f"pxarray: {self.pxarray.shape}")
+        self.pxarray = np.array(self.pxarray, np.int32(0))
 
     def clear(self):
-        self.zbuffer.fill(np.inf) 
+        self.zbuffer.fill(np.finfo(np.float32).max) 
         self.pxarray.fill(0)
 
     def updatePixels(self):
@@ -62,8 +58,11 @@ class Renderer3D(Renderer):
         width = xmax - xmin + 1
         height = ymax - ymin + 1
 
-        color = int(pygame.Color(color))
-        color = np.int64(color)
+        r,g,b = color
+
+        r = np.int32(r)
+        g = np.int32(g)
+        b = np.int32(b)
 
         platform = cl.get_platforms()[0]
         device = platform.get_devices()[0]
@@ -71,102 +70,93 @@ class Renderer3D(Renderer):
         ctx = cl.Context([device])
         queue = cl.CommandQueue(ctx)
 
+        start_transfer = time.time()
         mf = cl.mem_flags
-        zbuffer_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
-        zbuffer_res = cl.Buffer(ctx, mf.WRITE_ONLY, self.zbuffer.nbytes)
-        pxarray_res = cl.Buffer(ctx, mf.WRITE_ONLY | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
-        a_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y]))
-        b_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y]))
-        c_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y]))
-        depths_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths))
-
-        # prg = cl.Program(ctx, """
-        # __kernel void rasterize(
-        #         __global float *zbuffer_g,
-        #         __global float *zbuffer_res,
-        #         __global int *pxarray_res, 
-        #         __global const int *a,
-        #         __global const int *b,
-        #         __global const int *c,
-        #         __global const float *depths,
-        #         long color,
-        #         int xmax, int xmin,
-        #         int ymax, int ymin)
-        #     {
-        #         int gidx = get_global_id(0);
-        #         int gidy = get_global_id(1);
-        #         // int index = (xmin + gidx) + (ymax - ymin + 1) * (ymin + gidy);
-        #         int index = (ymin + gidy) + (xmax - xmin + 1) * (xmin + gidx);
-                            
-        #         float depth_a = depths[0];
-        #         float depth_b = depths[1];
-        #         float depth_c = depths[2];
-        #         float det = (float)((b[0]-a[0]) * (c[1]-a[1]) - (c[0]-a[0]) * (b[1]-a[1]));
-        #         float w1 = 0.0;
-        #         float w2 = 0.0;
-                
-        #         // int px = xmin + gidx - a[0];
-        #         int px = ymin + gidy - a[0];
-        #         // int py = ymin + gidy - a[1];
-        #         int py = xmin + gidx - a[1];
-        #         float pointDepth = FLT_MAX;
-        #         if (det != 0)
-        #         {
-        #             w1 = (px * (b[1]-a[1]) - py * (b[0]-a[0]))/det;
-        #             w2 = (-px * (c[1]-a[1]) + py * (c[0]-a[0]))/det;
-        #         }
-        #         if (w1 + w2 <= 1.0 && w1 >= 0.0 && w2 >= 0.0)
-        #         {
-        #             pointDepth = depth_a + w1*(depth_b - depth_a) + w2*(depth_c - depth_a);
-        #         }          
-                         
-        #         if (pointDepth < zbuffer_g[index])
-        #         {
-        #             zbuffer_res[index] = pointDepth;
-        #             pxarray_res[index] = color;
-        #         } 
-   
-        #     } 
-        # """ ).build()
-
-        #         # if (pointDepth < zbuffer_g[index])
-        #         # {
-        #         #     zbuffer_res[index] = pointDepth;
-        #         #     pxarray_res[index] = color;
-        #         # }
-        #         # else
-        #         # {
-        #         #     zbuffer_res[index] = pointDepth;
-        #         #     pxarray_res[index] = color;
-        #         # }
+        zbuffer_g = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
+        pxarray_g = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        a_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y], dtype=np.int32))
+        b_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y], dtype=np.int32))
+        c_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
+        depths_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
+        end_transfer = time.time()
 
         prg = cl.Program(ctx, """
-                __kernel void rasterize(
-                        __global float *zbuffer_g,
-                        __global float *zbuffer_res,
-                        __global long *pxarray_res, 
-                        __global const int *a,
-                        __global const int *b,
-                        __global const int *c,
-                        __global const float *depths,
-                        long color,
-                        int xmax, int xmin,
-                        int ymax, int ymin,
-                        int width, int height)
-                    {
-                        int gidx = get_global_id(0);
-                        int gidy = get_global_id(1);
-
-                        pxarray_res[gidx] = 4294967295;
-                    } 
-                """ ).build()
+        __kernel void rasterize(
+                __global float *zbuffer_g,
+                __global int *pxarray_g, 
+                __global int *a_g,
+                __global int *b_g,
+                __global int *c_g,
+                __global const float *depths,
+                int r, int g, int b,
+                int xmin,
+                int ymin,
+                int height, 
+                int maxDepth)
+            {
+                int gidx = get_global_id(0);
+                int gidy = get_global_id(1);
+                int depthidx = (ymin + gidy) + height * (xmin + gidx);
+                int pxidx = 3*depthidx;
+                            
+                float depth_a = depths[0];
+                float depth_b = depths[1];
+                float depth_c = depths[2];
+                int det = ((b_g[0]-a_g[0]) * (c_g[1]-a_g[1]) - (c_g[0]-a_g[0]) * (b_g[1]-a_g[1]));
+                float w1 = 0.0;
+                float w2 = 0.0;
+                
+                int px = (xmin + gidx - a_g[0]);
+                int py = ymin + gidy - a_g[1];
+                         
+                float pointDepth = maxDepth;
+                if (det != 0)
+                {
+                    w1 = (float)(px * (c_g[1]-a_g[1]) - py * (c_g[0]-a_g[0]))/det;
+                    w2 = (float)(-px * (b_g[1]-a_g[1]) + py * (b_g[0]-a_g[0]))/det;
+                }
+                else {return;}
+                
+                if (w1 + w2 > 1.0 || w1 < 0. || w2 < 0.)
+                {
+                    return;
+                }          
+                pointDepth = depth_a + w1*(depth_b - depth_a) + w2*(depth_c - depth_a);        
+                             
+                if (pointDepth < zbuffer_g[depthidx])
+                {
+                    zbuffer_g[depthidx] = pointDepth;
+                    pxarray_g[pxidx] = r;
+                    pxarray_g[pxidx + 1] = g;
+                    pxarray_g[pxidx + 2] = b;
+                }
+            } 
+        """ ).build()
 
 
         knl = prg.rasterize  # Use this Kernel object for repeated calls
-        knl(queue, (width, height), None, zbuffer_g, zbuffer_res, pxarray_res, a_g, b_g, c_g, depths_g, color, np.int32(xmax), np.int32(xmin), np.int32(ymax), np.int32(ymin), np.int32(self.zbuffer.shape[0]), np.int32(self.zbuffer.shape[1]))
+        knl(queue, (width, height), None, 
+            zbuffer_g,
+            pxarray_g,
+            a_g, 
+            b_g, 
+            c_g, 
+            depths_g, 
+            r,g,b, 
+            np.int32(xmin), 
+            np.int32(ymin), 
+            np.int32(self.pxarray.shape[1]),
+            np.finfo(np.float32).max 
+        )
 
-        cl.enqueue_copy(queue, self.pxarray, pxarray_res)
-        cl.enqueue_copy(queue, self.zbuffer, zbuffer_res)
+        start_copy = time.time()
+        cl.enqueue_copy(queue, self.pxarray, pxarray_g)
+        cl.enqueue_copy(queue, self.zbuffer, zbuffer_g)
+        end_copy = time.time()
+        print(f"""
+        overhead: {start_transfer - end_transfer}
+        calculation: {start_copy - end_copy}
+        """)
 
     def inTriangle(self, coordinate:tuple, task:RenderTask):
         px,py = coordinate
@@ -182,10 +172,8 @@ class Renderer3D(Renderer):
             w2 = (-px*u.y + py*u.x)/det
         else:
             return np.finfo(np.float32).max
-            # return np.inf
         if w1 + w2 > 1 or w1 < 0 or w2 < 0:
             return np.finfo(np.float32).max
-            # return np.inf
         else:
             return depth_a + w1*(depth_b-depth_a) + w2*(depth_c-depth_a)
 
