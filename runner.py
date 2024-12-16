@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,0,1]))
     # cube2 = CubeEntity(1, gravity_enabled=False)
     # cube2.transform.shift(np.array([0,0,-10]))
-    cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
+    # cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
     # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
@@ -52,26 +52,25 @@ if __name__ == "__main__":
     elapsed_time = 0
     dt = 1/fps
 
-    _3dscene.render()
+    # _3dscene.render()
     while running:
         # poll for events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # screen.fill("black")
 
         # scene.physicsStep()
         # scene.render()
 
-        # _3dscene.render()
+        _3dscene.render()
+        _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
-        # _3dscene.physicsStep(dt)
 
         pygame.display.flip()
         dt = clock.tick(fps)/1000
         # print(dt)
-        print(f"error: {dt - 1/fps}")
+        # print(f"error: {dt - 1/fps}")
         elapsed_time += dt
 
     pygame.quit()
