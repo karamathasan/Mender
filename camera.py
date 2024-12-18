@@ -5,6 +5,8 @@ from rendering.quaternion import Quaternion
 from rendering.renderer import Painter3D, Renderer3D
 from abc import ABC
 
+import time
+
 class Camera(ABC):
     def __init__(self, screen: pygame.Surface, width, aspect_ratio = 16/9):
         self.screen = screen
@@ -95,10 +97,20 @@ class Camera3D(Camera):
         for task in element.draw(self):
             tasks.append(task)
         self.renderer.clear()
+
+        total = 0
+        numTasks = 0
+        start = time.time()
         for task in tasks:
             # self.renderer.rasterize(task)
+            numTasks += 1
             self.renderer.rasterizeGPU(task) 
+            total += (time.time() - start) - total
+        end = time.time()   
         self.renderer.updatePixels()
+        # print(f'time taken: {end - start}')
+        # print(f'avg time per frame: {total / numTasks}')
+        # print(f'tasks: {numTasks}')
 
     def getDepth(self, vec):
         v = vec - self.transform.position

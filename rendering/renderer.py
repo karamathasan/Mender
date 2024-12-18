@@ -26,9 +26,29 @@ class Renderer3D(Renderer):
         self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
         self.pxarray = np.array(self.pxarray, np.int32(0))
 
+        platform = cl.get_platforms()[0]
+        device = platform.get_devices()[0]
+
+        self.ctx = cl.Context([device])
+        self.queue = cl.CommandQueue(self.ctx)
+
+        mf = cl.mem_flags
+        self.zbuffer_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
+        self.pxarray_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+
     def clear(self):
         self.zbuffer.fill(np.finfo(np.float32).max) 
         self.pxarray.fill(0)
+        # start_transfer = time.time()
+        cl.enqueue_copy(self.queue, self.zbuffer_g, self.zbuffer)
+        cl.enqueue_copy(self.queue, self.pxarray_g, self.pxarray)
+        # end_transfer = time.time()
+
+        # print(f"""
+        # overhead: {end_transfer - start_transfer}
+        # """)
+        # calculation: {start_copy - end_copy}
+
 
     def updatePixels(self):
         pygame.surfarray.blit_array(self.screen, self.pxarray)         
@@ -62,25 +82,16 @@ class Renderer3D(Renderer):
 
         r = np.int32(r)
         g = np.int32(g)
-        b = np.int32(b)
+        b = np.int32(b) 
 
-        platform = cl.get_platforms()[0]
-        device = platform.get_devices()[0]
 
-        ctx = cl.Context([device])
-        queue = cl.CommandQueue(ctx)
-
-        start_transfer = time.time()
         mf = cl.mem_flags
-        zbuffer_g = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
-        pxarray_g = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
-        a_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y], dtype=np.int32))
-        b_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y], dtype=np.int32))
-        c_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
-        depths_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
-        end_transfer = time.time()
-
-        prg = cl.Program(ctx, """
+        a_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y], dtype=np.int32))
+        b_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y], dtype=np.int32))
+        c_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
+        depths_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
+        
+        prg = cl.Program(self.ctx, """
         __kernel void rasterize(
                 __global float *zbuffer_g,
                 __global int *pxarray_g, 
@@ -132,12 +143,12 @@ class Renderer3D(Renderer):
                 }
             } 
         """ ).build()
-
-
+        
         knl = prg.rasterize  # Use this Kernel object for repeated calls
-        knl(queue, (width, height), None, 
-            zbuffer_g,
-            pxarray_g,
+
+        knl(self.queue, (width, height), None, 
+            self.zbuffer_g,
+            self.pxarray_g,
             a_g, 
             b_g, 
             c_g, 
@@ -148,15 +159,11 @@ class Renderer3D(Renderer):
             np.int32(self.pxarray.shape[1]),
             np.finfo(np.float32).max 
         )
-
-        start_copy = time.time()
-        cl.enqueue_copy(queue, self.pxarray, pxarray_g)
-        cl.enqueue_copy(queue, self.zbuffer, zbuffer_g)
-        end_copy = time.time()
-        print(f"""
-        overhead: {start_transfer - end_transfer}
-        calculation: {start_copy - end_copy}
-        """)
+        start = time.time()
+        cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g)
+        cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g)
+        end = time.time()
+        print(f"calculation time: {end-start}")
 
     def inTriangle(self, coordinate:tuple, task:RenderTask):
         px,py = coordinate

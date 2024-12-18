@@ -33,14 +33,15 @@ if __name__ == "__main__":
     cube = CubeEntity(1, gravity_enabled=False)
     # cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,1,0]))
     # cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,0,1]))
-    # cube2 = CubeEntity(1, gravity_enabled=False)
-    # cube2.transform.shift(np.array([0,0,-10]))
-    # cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
-    # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
+    cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
-    # sphere = Sphere3D(1)
-    # sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
+    # cube2 = CubeEntity(1, gravity_enabled=False)
+    # cube2.transform.shift(np.array([0,0,-10]))
+    # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
+
+    sphere = Sphere3D(1)
+    sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
@@ -61,8 +62,8 @@ if __name__ == "__main__":
         # scene.physicsStep()
         # scene.render()
 
-        # _3dscene.render()
-        # _3dscene.physicsStep(dt)
+        _3dscene.render()
+        _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
 
         pygame.display.flip()
