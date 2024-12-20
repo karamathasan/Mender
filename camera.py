@@ -98,15 +98,16 @@ class Camera3D(Camera):
             tasks.append(task)
         self.renderer.clear()
 
-        total = 0
-        numTasks = 0
-        start = time.time()
-        for task in tasks:
-            # self.renderer.rasterize(task)
-            numTasks += 1
-            self.renderer.rasterizeGPU(task) 
-            total += (time.time() - start) - total
-        end = time.time()   
+        # total = 0
+        # numTasks = 0
+        # start = time.time()
+        # for task in tasks:
+        #     # self.renderer.rasterize(task)
+        #     numTasks += 1
+        #     self.renderer.rasterizeGPU(task) 
+        #     total += (time.time() - start) - total
+        # end = time.time()   
+        self.renderer.rasterizeGPU(tasks)
         self.renderer.updatePixels()
         # print(f'time taken: {end - start}')
         # print(f'avg time per frame: {total / numTasks}')

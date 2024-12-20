@@ -59,7 +59,7 @@ class Entity2D(Entity, Element2D):
         else: self.dynamics = dynamics
 
     def applyConstraint(self, constraint: Constraint2D):
-        constraint.accept(self)
+        constraint.visit(self)
 
 class Entity3D(Entity, Element3D):
     def __init__(self, mass: float = 10.0, transform: Transform3D = None, dynamics: Dynamics3D = None, gravity_enabled = True):
@@ -87,4 +87,4 @@ class Entity3D(Entity, Element3D):
             self.dynamics = dynamics
     
     def applyConstraint(self, constraint: Constraint3D):
-        constraint.accept(self)
+        constraint.visit(self)

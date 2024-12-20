@@ -8,6 +8,9 @@ from elements._3D.cube import Cube as CubeElement
 from entities._3D.plane import Plane3D
 from entities._3D.sphere import Sphere3D
 
+from elements.text import Text
+from elements._2D.coordinategraph import CartesianGraph2D
+
 from physics.transform import Transform2D
 from rendering.quaternion import Quaternion
 
@@ -25,10 +28,16 @@ if __name__ == "__main__":
     # circle = Circle(1,gravity_enabled=True)
     # circle.dynamics.set(velocity=np.array([1,0]))
 
+    # text = Text("hello", 10)
+    # graph = CartesianGraph2D()
+
     # scene = Scene2D(screen=screen, fps=fps)
+    # scene.add(text)
+    # scene.add(graph)
+
     # scene.add(Square(1,"red", 10, transform=Transform2D(np.array([0,0]),0)))
     # scene.add(Square(1,"blue", 10, transform=Transform2D(np.array([1,0]),0)))
-
+    
     # 3D
     cube = CubeEntity(1, gravity_enabled=False)
     # cube.transform.orientation *= Quaternion.fromAxis(45,np.array([0,1,0]))
@@ -48,11 +57,11 @@ if __name__ == "__main__":
     # camera.transform.shift(np.array([0,0,5]))
     # camera.transform.rotate(30, np.array([0,0,1]))
 
-    _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
+    _3dscene = Scene3D(sphere, screen=screen, camera=camera, fps=fps)
     elapsed_time = 0
     dt = 1/fps
-
-    _3dscene.render()
+    framecount = 0
+    # _3dscene.render()
     while running:
         # poll for events
         for event in pygame.event.get():
@@ -71,6 +80,8 @@ if __name__ == "__main__":
         # print(dt)
         # print(f"error: {dt - 1/fps}")
         elapsed_time += dt
+        print(f"true fps: {framecount/elapsed_time}")
+        framecount +=1
 
     pygame.quit()
 

@@ -5,7 +5,7 @@ class Constraint(ABC):
     def __init__(self):
         pass
 
-    def accept(self, entity):
+    def visit(self, entity):
         pass
 
 class Constraint2D(Constraint):
