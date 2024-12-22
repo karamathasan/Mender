@@ -105,7 +105,7 @@ class Renderer3D(Renderer):
     def updatePixels(self):
         pygame.surfarray.blit_array(self.screen, self.pxarray)         
 
-    def rasterize(self, task: RenderTask):
+    def rasterizeCPU(self, task: RenderTask):
         xmax, ymax, xmin, ymin = self.bound(task.points)
         for x in range(xmax-xmin+1):
             for y in range(ymax-ymin+1):
@@ -113,17 +113,7 @@ class Renderer3D(Renderer):
                 if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
                     self.zbuffer[xmin + x, ymin + y] = pointDepth
                     self.pxarray[xmin + x, ymin + y] = task.color
-
-    # def bresraster(self, task: RenderTask):
-    #     # rasterize with bresenham and scanline algorithms
-    #     # a is the highest point of the 
-    #     xmax, ymax, xmin, ymin = self.bound(task.points)
-    #     a = min(task.points, key=lambda p: p[1])
-    #     b = min(task.points, key=lambda p: p[0])
-    #     c = max(task.points, key=lambda p: p[1])
-    #     l1 = self.bresenham(a,b)
-    #     l2 = self.bresenham(a,c)
-
+    
     def rasterizeGPU(self, tasks: list[RenderTask]): 
         # start = time.time()
         for task in tasks:
