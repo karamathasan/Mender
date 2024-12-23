@@ -2,11 +2,14 @@ from element import Element2D
 from physics.transform import Transform2D
 import numpy as np
 import pygame
-# import pyopencl
+import pyopencl as cl
+import types
 
 class CartesianGraph2D(Element2D):
     def __init__(self, dimensions:tuple = None, scale:tuple = None, transform:Transform2D = None):
         # if the dimensions are none, then they will span the remainder of the camera
+        # dimensions are lengths in world space
+        # the scale of the dimensions will fit scale * dimension ticks
         self.dimensions = dimensions
         self.scale = scale
 
@@ -28,23 +31,37 @@ class CartesianGraph2D(Element2D):
         assert end is not None, "Invalid end"
         self.vectors.append((start, end))
 
+    # def translateFunction(self, function: types.FunctionType):
+    #     res = ""
+    #     return res
 
-    def plotFunction(self, assertion):
+    def plotFunction(self, function: types.FunctionType):
+        self.functions.append(function)
+
+    def plotFunctionGPU(self, function: str):
+        # for all x present in screen, graph the corresponding y
+        # str is expected to in the form:
+        # "2 * x", "2 ** x", "x * x + 2 * x + 2"
+        pass
+
+    def plotSatisfaction(self, assertion):
         pass
 
     def draw(self, camera):
+        rotmat = np.array(
+            [[np.cos(self.transform.orientation), -np.sin(self.transform.orientation)],
+             [np.sin(self.transform.orientation), np.cos(self.transform.orientation)]]
+        )
         def local2global(vec: np.ndarray):
-            res = np.array([
-                vec[0] * np.cos(self.transform.orientation) - vec[1] * np.sin(self.transform.orientation),
-                vec[0] * np.sin(self.transform.orientation) + vec[1] * np.cos(self.transform.orientation)
-            ])
+            res = rotmat @ vec
             res += self.transform.position
             return camera.Vec2Screen(res)
+        
         def drawVector(start = np.array([0,0]), end = None):
             assert end is not None, "End invalid"
-            vecAngle = np.atan((end[1]-start[1])/(end[0]-start[0]))
-            leftDiagonal = (-1,0.2)
-            rightDiagonal = (-1,-0.2)
+            vecAngle = np.arctan2((end[1]-start[1]),(end[0]-start[0])) 
+            leftDiagonal = (-0.5,0.2)
+            rightDiagonal = (-0.5,-0.2)
             leftDiagonal = np.array([
                 leftDiagonal[0] * np.cos(vecAngle) - leftDiagonal[1] * np.sin(vecAngle),
                 leftDiagonal[0] * np.sin(vecAngle) + leftDiagonal[1] * np.cos(vecAngle)
@@ -64,26 +81,33 @@ class CartesianGraph2D(Element2D):
             pygame.draw.polygon(camera.screen, "white", (end, leftDiagonal, rightDiagonal), )
             # local coordinates
             pass
+        
+        # def drawTicks():
+            # if self.dimensions:
+
         origin = camera.Vec2Screen(self.transform.position)
         # tick marks can be added through finding local coordinates of the graph through its transform
 
-        # axes are currently not correctly drawn
+        if not self.dimensions:
+            # intentionally longer than needed 
+            xLen = camera.screen.get_size()[0]/2
+            yLen = camera.screen.get_size()[1]/2
+        else:
+            xLen = self.dimensions[0]
+            yLen = self.dimensions[1]
+            
         if origin.x < camera.screen.get_size()[0] and origin.y < camera.screen.get_size()[1]:
-            if not self.dimensions: 
-                left = pygame.Vector2((0,origin.y + (camera.screen.get_size()[0] - origin.x) * np.sin(self.transform.orientation)))
-                right = pygame.Vector2((camera.screen.get_size()[0],origin.y + (origin.x - camera.screen.get_size()[0]) * np.sin(self.transform.orientation) ))
-                top = pygame.Vector2((origin.x - origin.y * np.sin(self.transform.orientation),0))
-                bottom = pygame.Vector2(origin.x + origin.y * np.sin(self.transform.orientation),(camera.screen.get_size()[1]))
-                pygame.draw.line(camera.screen, "white", left, right)
-                pygame.draw.line(camera.screen, "white", top, bottom)
-            else:
-                # xAxisLen = 
-                left = pygame.Vector2((0,origin.y + (camera.screen.get_size()[0] - origin.x) * np.sin(self.transform.orientation)))
-                right = pygame.Vector2((camera.screen.get_size()[0],origin.y + (origin.x - camera.screen.get_size()[0]) * np.sin(self.transform.orientation) ))
-                top = pygame.Vector2((origin.x - origin.y * np.sin(self.transform.orientation),0))
-                bottom = pygame.Vector2(origin.x + origin.y * np.sin(self.transform.orientation),(camera.screen.get_size()[1]))
-                pygame.draw.line(camera.screen, "white", left, right)
-                pygame.draw.line(camera.screen, "white", top, bottom)
+            xDir = rotmat @ np.array([1,0]) 
+            yDir = rotmat @ np.array([0,1]) 
+
+            right = camera.Vec2Screen(xDir * xLen)
+            left = camera.Vec2Screen(-xDir * xLen)
+            top = camera.Vec2Screen(yDir * yLen)
+            bottom = camera.Vec2Screen(-yDir * yLen)
+            pygame.draw.line(camera.screen, "white", origin, right)
+            pygame.draw.line(camera.screen, "white", origin, left)
+            pygame.draw.line(camera.screen, "white", origin, top)
+            pygame.draw.line(camera.screen, "white", origin, bottom)
 
         for point in self.points:
             position = local2global(point)

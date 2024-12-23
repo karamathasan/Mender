@@ -7,5 +7,5 @@ class Presentation():
         if self.currentIndex < len(self.scenes):
             self.currentIndex += 1 
 
-    def play(self):
+    def run(self, dt: float):
         pass

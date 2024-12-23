@@ -98,20 +98,8 @@ class Camera3D(Camera):
             tasks.append(task)
         self.renderer.clear()
 
-        # total = 0
-        # numTasks = 0
-        # start = time.time()
-        # for task in tasks:
-        #     # self.renderer.rasterize(task)
-        #     numTasks += 1
-        #     self.renderer.rasterizeGPU(task) 
-        #     total += (time.time() - start) - total
-        # end = time.time()   
         self.renderer.rasterizeGPU(tasks)
         self.renderer.updatePixels()
-        # print(f'time taken: {end - start}')
-        # print(f'avg time per frame: {total / numTasks}')
-        # print(f'tasks: {numTasks}')
 
     def getDepth(self, vec):
         v = vec - self.transform.position
@@ -135,7 +123,7 @@ class Perspective3D(Camera3D):
         # depth = v[2]
         # if not (self.near_clip < np.linalg.norm(u * np.dot(u,v) / np.dot(u,u)) < self.far_clip):
         # if not (self.near_clip < -depth < self.far_clip):
-        #     return
+            # return
         # if (np.dot(u,v/np.linalg.norm(v)) < np.cos(self.fov/2) ):
         #     return 
        

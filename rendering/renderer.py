@@ -46,7 +46,8 @@ class Renderer3D(Renderer):
                 int r, int g, int b,
                 int xmin,
                 int ymin,
-                int height, 
+                int height,
+                int width
                 int maxDepth)
             {
                 int gidx = get_global_id(0);
@@ -80,6 +81,7 @@ class Renderer3D(Renderer):
                             
                 if (pointDepth < zbuffer_g[depthidx])
                 {
+                    if (pxidx < height * width * 3)
                     zbuffer_g[depthidx] = pointDepth;
                     pxarray_g[pxidx] = r;
                     pxarray_g[pxidx + 1] = g;
@@ -91,31 +93,14 @@ class Renderer3D(Renderer):
     def clear(self):
         self.zbuffer.fill(np.finfo(np.float32).max) 
         self.pxarray.fill(0)
-        # start_transfer = time.time()
+
         cl.enqueue_copy(self.queue, self.zbuffer_g, self.zbuffer)
         cl.enqueue_copy(self.queue, self.pxarray_g, self.pxarray)
-        # end_transfer = time.time()
-
-        # print(f"""
-        # overhead: {end_transfer - start_transfer}
-        # """)
-        # calculation: {start_copy - end_copy}
-
 
     def updatePixels(self):
         pygame.surfarray.blit_array(self.screen, self.pxarray)         
-
-    def rasterizeCPU(self, task: RenderTask):
-        xmax, ymax, xmin, ymin = self.bound(task.points)
-        for x in range(xmax-xmin+1):
-            for y in range(ymax-ymin+1):
-                pointDepth = self.inTriangle((xmin + x,ymin + y),task)
-                if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
-                    self.zbuffer[xmin + x, ymin + y] = pointDepth
-                    self.pxarray[xmin + x, ymin + y] = task.color
     
     def rasterizeGPU(self, tasks: list[RenderTask]): 
-        # start = time.time()
         for task in tasks:
             xmax, ymax, xmin, ymin = self.bound(task.points)
             points, depths, color = task.toTuple()
@@ -145,17 +130,20 @@ class Renderer3D(Renderer):
                 np.int32(xmin), 
                 np.int32(ymin), 
                 np.int32(self.pxarray.shape[1]),
+                np.int32(self.pxarray.shape[0]),
                 np.finfo(np.float32).max 
             )
         cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g)
         cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g)
-#         print(f"""
-# Total Time: {end-start}
-# Setup Time: {setup-start}
-# Kernel Build Time: {kernelBuild - setup}
-# Enqueue Copy Time: {end-kernelBuild}
-# """
-#         )
+
+    def rasterizeCPU(self, task: RenderTask):
+        xmax, ymax, xmin, ymin = self.bound(task.points)
+        for x in range(xmax-xmin+1):
+            for y in range(ymax-ymin+1):
+                pointDepth = self.inTriangle((xmin + x,ymin + y),task)
+                if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
+                    self.zbuffer[xmin + x, ymin + y] = pointDepth
+                    self.pxarray[xmin + x, ymin + y] = task.color
 
     def inTriangle(self, coordinate:tuple, task:RenderTask):
         px,py = coordinate

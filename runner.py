@@ -27,13 +27,13 @@ if __name__ == "__main__":
     # 2D
     # circle = Circle(1,gravity_enabled=True)
     # circle.dynamics.set(velocity=np.array([1,0]))
-
-    # text = Text("hello", 10)
+    text = Text("hello", 22)
     graph = CartesianGraph2D()
-    # graph.transform.orientation = np.pi/8
-    graph.plotVec(end = np.array([2,-4]))
+    graph.transform.orientation = np.pi/8
+    graph.plotVec(end = np.array([-1,2]))
+
     scene = Scene2D(screen=screen, fps=fps)
-    # scene.add(text)
+    scene.add(text)
     scene.add(graph)
 
     # scene.add(Square(1,"red", 10, transform=Transform2D(np.array([0,0]),0)))
@@ -58,7 +58,9 @@ if __name__ == "__main__":
     # camera.transform.shift(np.array([0,0,5]))
     # camera.transform.rotate(30, np.array([0,0,1]))
 
-    _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
+    plane = Plane3D()
+
+    _3dscene = Scene3D( plane, screen=screen, camera=camera, fps=fps)
     elapsed_time = 0
     dt = 1/fps
     # _3dscene.render()
@@ -69,10 +71,10 @@ if __name__ == "__main__":
                 running = False
         screen.fill("black")
         # scene.physicsStep()
-        scene.render()
+        # scene.render()
 
-        # _3dscene.render()
-        # _3dscene.physicsStep(dt)
+        _3dscene.render()
+        _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
 
         pygame.display.flip()
