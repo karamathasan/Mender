@@ -14,6 +14,8 @@ from elements._2D.coordinategraph import CartesianGraph2D
 from physics.transform import Transform2D
 from rendering.quaternion import Quaternion
 
+from animation.shift import LinearShift2D
+from animation.playable import Playable
 from presentation.presentation import Presentation
 
 if __name__ == "__main__":
@@ -27,23 +29,26 @@ if __name__ == "__main__":
 
     # Scene setup
     # 2D
-    # p = Presentation()
+    p = Presentation()
     scene = Scene2D(screen=screen, fps=fps)
     
+    square = Square(1,"red")
+    square.transform.orientation = np.pi/4
+
     # circle = Circle(1,gravity_enabled=True)
     # circle.dynamics.set(velocity=np.array([1,0]))
     # text = Text("hello", 22)
-    graph = CartesianGraph2D((1,1),(2,2))
-    graph.plotVec(end = np.array([-1,2]))
+    # graph = CartesianGraph2D((1,1),(2,2))
+    # graph.plotVec(end = np.array([-1,2]))
 
     # scene.add(text)
-    scene.add(graph)
+    # scene.add(graph)
+    scene.add(square)
 
-    # p.add(scene)
-    # square = Square(1,"red", 10, transform=Transform2D(np.array([0,0]),0))
-    # square
-    # scene.add(square)
-    # scene.add(Square(1,"blue", 10, transform=Transform2D(np.array([1,0]),0)))
+    p.add(scene, 
+        LinearShift2D(square, np.array([5,0]), 1),
+        LinearShift2D(square, np.array([0,0]), 2)
+    )
     
     # 3D
     # cube = CubeEntity(1, gravity_enabled=False)
@@ -78,13 +83,13 @@ if __name__ == "__main__":
                 running = False
         screen.fill("black")
         # scene.physicsStep()
-        scene.render()
+        # scene.render()
 
         # _3dscene.render()
         # _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
 
-        # p.run(dt)
+        p.run(dt)
         pygame.display.flip()
         dt = clock.tick(fps)/1000
 

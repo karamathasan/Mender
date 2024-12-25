@@ -8,6 +8,7 @@ from physics.solver import Solver, ExplicitEuclid2D, ExplicitEuclid3D
 # each scene should have its own coordinate system
 class Scene():
     def __init__(self, *args: Element, screen):
+        self.elements: list[Element]
         pass
 
     def add(self):

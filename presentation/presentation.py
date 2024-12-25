@@ -1,14 +1,36 @@
+from animation.playable import Playable
+from animation.animation import Animation
+
 class Presentation():
-    def __init__(self, *scenes):
-        self.scenes = list(*scenes)
-        self.currentIndex = 0
-    
-    def add(self, scene):
-        self.scenes.append(scene)
+    def __init__(self, *playable: Playable):
+        self.playables = [*playable]
+        self.current_playable = None
+        self.current_animation = None
+
+    def add(self, scene, *animations: Animation):
+        elements = set(scene.elements)
+        for anim in animations:
+            assert anim.element in elements, f"element {anim.element} not present in scene"
+        self.playables.append(Playable(scene, *animations))
 
     def next(self):
-        if self.currentIndex < len(self.scenes):
-            self.currentIndex += 1 
+        if len(self.current_playable.animations) > 0:
+            self.current_animation = self.current_playable.animations.pop(0)
+        elif len(self.playables) > 0:
+            self.current_playable = self.playables.pop(0)
+            self.current_animation = self.current_playable.animations.pop(0)
 
     def run(self, dt: float):
-        self.scenes[self.currentIndex].render()
+        if not self.current_playable:
+            self.current_playable = self.playables.pop(0)
+        if not self.current_animation:
+            self.current_animation = self.current_playable.animations.pop(0)
+            self.current_animation.init()
+
+        if not self.current_animation.is_complete:
+            self.current_animation.update(dt)
+        else: 
+            self.next()
+            self.current_animation.init()
+            
+        self.current_playable.scene.render()

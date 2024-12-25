@@ -28,5 +28,5 @@ class Square(Element2D):
              [np.sin(self.transform.orientation), np.cos(self.transform.orientation)]]
         )
         for v in self.vertices:
-            screenVertices.append(camera.Vec2Screen(v @ rotmat))
+            screenVertices.append(camera.Vec2Screen(v @ rotmat + self.transform.position))
         pygame.draw.polygon(camera.screen, self.color, screenVertices)

@@ -3,6 +3,8 @@ from rendering.quaternion import Quaternion
 
 class Transform():
     def __init__(self):
+        self.position: np.ndarray
+        self.orientation: float | Quaternion
         pass
 
 class Transform2D(Transform):
