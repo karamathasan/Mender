@@ -25,11 +25,13 @@ class CartesianGraph2D(Element2D):
         pass
     
     def plotPoint(self, point: np.ndarray):
-        self.points.append(point)
+        if not point in self.points:
+            self.points.append(point)
 
     def plotVec(self, start: np.ndarray = np.array([0,0]), end:np.ndarray = None):
         assert end is not None, "Invalid end"
-        self.vectors.append((start, end))
+        if not (start, end) in self.vectors:
+            self.vectors.append((start, end))
 
     # def translateFunction(self, function: types.FunctionType):
     #     res = ""
@@ -39,8 +41,33 @@ class CartesianGraph2D(Element2D):
         self.functions.append(function)
 
     def plotFunctionGPU(self, function: str):
+        # self.screen = screen
+        # self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
+        # self.pxarray = np.array(self.pxarray, np.int32(0))
+
+        # platform = cl.get_platforms()[0]
+        # device = platform.get_devices()[0]
+
+        # self.ctx = cl.Context([device])
+        # self.queue = cl.CommandQueue(self.ctx)
+
+        # mf = cl.mem_flags
+        # self.pxarray_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        
+        # self.prg = cl.Program(self.ctx, """
+        # __kernel void plotFunc(
+        #         __global__ float *pxarray_g,
+        #         float xmin,
+        #         float xmax,
+        #         int width, 
+        #         int height)
+        #     {
+        #         float y = """ + function + """;
+        #     } 
+        # """ ).build()
         # for all x present in screen, graph the corresponding y
         # str is expected to in the form:
+        
         # "2 * x", "2 ** x", "x * x + 2 * x + 2"
         pass
 
@@ -77,11 +104,8 @@ class CartesianGraph2D(Element2D):
             leftDiagonal = local2global(leftDiagonal)
             rightDiagonal = local2global(rightDiagonal)
             pygame.draw.line(camera.screen, "white", start, end)
-
             pygame.draw.polygon(camera.screen, "white", (end, leftDiagonal, rightDiagonal), )
-            # local coordinates
-            pass
-        
+
         # def drawTicks():
             # if self.dimensions:
 
@@ -89,7 +113,7 @@ class CartesianGraph2D(Element2D):
         # tick marks can be added through finding local coordinates of the graph through its transform
 
         if not self.dimensions:
-            # intentionally longer than needed 
+            # intentionally longer than needed, may cause issues when moving camera
             xLen = camera.screen.get_size()[0]/2
             yLen = camera.screen.get_size()[1]/2
         else:
@@ -112,6 +136,7 @@ class CartesianGraph2D(Element2D):
         for point in self.points:
             position = local2global(point)
             pygame.draw.circle(camera.screen, "white", position, 3)
+
         for vec in self.vectors:
             drawVector(*vec)
         

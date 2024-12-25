@@ -46,6 +46,7 @@ class Camera2D(Camera):
             self.transform = transform
 
     def Vec2Screen(self, vec: np.ndarray):
+        # TODO: account for camera orientation
         assert vec.shape == (2,)
         size = self.screen.get_size()
         pygX = size[0]/2 + self.toScreenSpace(vec[0])

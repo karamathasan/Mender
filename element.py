@@ -7,6 +7,9 @@ class Element(ABC):
     def draw(self):
         pass
 
+    def animate(self):
+        pass
+
 class Element2D(Element):
     def __init__(self):
         pass

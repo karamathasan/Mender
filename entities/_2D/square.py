@@ -21,11 +21,19 @@ class Square(Entity2D):
         self.size = size 
         self.color = color
 
+        self.vertices = [
+            np.array([-self.size/2, -self.size/2]),
+            np.array([self.size/2, -self.size/2]),
+            np.array([self.size/2, self.size/2]),
+            np.array([-self.size/2, self.size/2])
+        ]
+
     def draw(self, camera: Camera2D):
-        originScreen = camera.Vec2Screen(self.transform.position)
-        pygame.draw.rect(camera.screen, self.color, pygame.rect.Rect(
-                originScreen[0],
-                originScreen[1],
-                camera.toScreenSpace(self.size),
-                camera.toScreenSpace(self.size)
-            ))
+        screenVertices = []
+        rotmat = np.array(
+            [[np.cos(self.transform.orientation), -np.sin(self.transform.orientation)],
+             [np.sin(self.transform.orientation), np.cos(self.transform.orientation)]]
+        )
+        for v in self.vertices:
+            screenVertices.append(camera.Vec2Screen(v @ rotmat))
+        pygame.draw.polygon(camera.screen, self.color, screenVertices)

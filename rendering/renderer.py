@@ -21,9 +21,8 @@ class Renderer(ABC):
 class Renderer3D(Renderer):
     def __init__(self, screen):
         self.screen = screen
-        # self.zbuffer = np.full(self.screen.get_size(),np.inf) #not transposed on purpose
-        self.zbuffer = np.full(self.screen.get_size(),np.finfo(np.float32).max) #not transposed on purpose
-        self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
+        self.zbuffer = np.full(self.screen.get_size(),np.finfo(np.float32).max) # not transposed on purpose
+        self.pxarray = pygame.surfarray.array3d(screen) # indexed in the same way the zbuffer is
         self.pxarray = np.array(self.pxarray, np.int32(0))
 
         platform = cl.get_platforms()[0]
@@ -47,7 +46,7 @@ class Renderer3D(Renderer):
                 int xmin,
                 int ymin,
                 int height,
-                int width
+                int width,
                 int maxDepth)
             {
                 int gidx = get_global_id(0);
@@ -82,10 +81,12 @@ class Renderer3D(Renderer):
                 if (pointDepth < zbuffer_g[depthidx])
                 {
                     if (pxidx < height * width * 3)
-                    zbuffer_g[depthidx] = pointDepth;
-                    pxarray_g[pxidx] = r;
-                    pxarray_g[pxidx + 1] = g;
-                    pxarray_g[pxidx + 2] = b;
+                    {
+                        zbuffer_g[depthidx] = pointDepth;
+                        pxarray_g[pxidx] = r;
+                        pxarray_g[pxidx + 1] = g;
+                        pxarray_g[pxidx + 2] = b;
+                    }
                 }
             } 
         """ ).build()
