@@ -1,5 +1,6 @@
 from animation.playable import Playable
 from animation.animation import Animation
+from animation.animationgroup import AnimationGroup
 
 class Presentation():
     def __init__(self, *playable: Playable):
@@ -10,7 +11,8 @@ class Presentation():
     def add(self, scene, *animations: Animation):
         elements = set(scene.elements)
         for anim in animations:
-            assert anim.element in elements, f"element {anim.element} not present in scene"
+            if not isinstance(anim, AnimationGroup):
+                assert anim.element in elements
         self.playables.append(Playable(scene, *animations))
 
     def next(self):

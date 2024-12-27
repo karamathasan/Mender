@@ -39,7 +39,7 @@ class LinearShift3D(Animation):
             self.is_complete = True
 
 class QuadraticShift2D(Animation):
-    def __init__(self,element: Element2D):
+    def __init__(self, element: Element2D, end_pos: np.ndarray, control):
         pass
 
     def update(self, dt):

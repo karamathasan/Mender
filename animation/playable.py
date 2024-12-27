@@ -9,7 +9,8 @@ class Playable():
     def __init__(self, scene: Scene, *animations: Animation):
         self.elements = set(scene.elements)
         for anim in animations:
-            assert anim.element in self.elements
+            if not isinstance(anim, AnimationGroup):
+                assert anim.element in self.elements
         self.scene = scene
         self.animations = [*animations]
         

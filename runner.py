@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from scene import Scene, Scene2D, Scene3D, Orthographic3D, Perspective3D
 from entities._2D.circle import Circle
+from elements._2D.circle import Circle as CircleElement
 from elements._2D.square import Square
 from entities._3D.cube import Cube as CubeEntity
 from elements._3D.cube import Cube as CubeElement
@@ -14,7 +15,8 @@ from elements._2D.coordinategraph import CartesianGraph2D
 from physics.transform import Transform2D
 from rendering.quaternion import Quaternion
 
-from animation.shift import LinearShift2D
+from animation.shift import LinearShift2D, QuadraticShift2D
+from animation.animationgroup import ParallelGroup, DeadlineGroup, RaceGroup, SequentialGroup
 from animation.playable import Playable
 from presentation.presentation import Presentation
 
@@ -37,13 +39,15 @@ if __name__ == "__main__":
 
     # circle = Circle(1,gravity_enabled=True)
     # circle.dynamics.set(velocity=np.array([1,0]))
+
+    circle = CircleElement(0.5)    
     # text = Text("hello", 22)
     # graph = CartesianGraph2D((1,1),(2,2))
     # graph.plotVec(end = np.array([-1,2]))
 
     # scene.add(text)
     # scene.add(graph)
-    scene.add(square)
+    scene.add(square, circle)
 
     p.add(scene, 
         LinearShift2D(square, np.array([5,0]), 1),
