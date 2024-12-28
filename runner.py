@@ -35,23 +35,23 @@ if __name__ == "__main__":
     scene = Scene2D(screen=screen, fps=fps)
     
     square = Square(1,"red")
-    square.transform.orientation = np.pi/4
+    # square.transform.orientation = np.pi/4
 
     # circle = Circle(1,gravity_enabled=True)
     # circle.dynamics.set(velocity=np.array([1,0]))
 
     circle = CircleElement(0.5)    
     # text = Text("hello", 22)
-    # graph = CartesianGraph2D((1,1),(2,2))
-    # graph.plotVec(end = np.array([-1,2]))
+    graph = CartesianGraph2D((5,5),(2,2))
+    graph.plotVec(end = np.array([-1,2]))
 
     # scene.add(text)
-    # scene.add(graph)
+    scene.add(graph)
     scene.add(square, circle)
 
     p.add(scene, 
-        LinearShift2D(square, np.array([5,0]), 1),
-        LinearShift2D(square, np.array([0,0]), 2)
+        QuadraticShift2D(square, np.array([5,0]), 1),
+        # LinearShift2D(square, np.array([0,0]), 2)
     )
     
     # 3D
