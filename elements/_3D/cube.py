@@ -20,7 +20,6 @@ class Cube(Element3D):
         else: self.transform = transform
         self.color = color
 
-        # needs to account for orientation
         s = self.size / 2
         self.vertices = [
             np.array([-s,-s,s]), # 0
