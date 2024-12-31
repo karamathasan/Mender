@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC
+import pygame
 
 class Collider(ABC):
     def __init__(self, parent, vertices):
@@ -17,9 +18,9 @@ class Collider2D(Collider):
 
     def checkCollision(self, other: Collider):
         assert isinstance(other, Collider2D)
+        selfLocal = self.getLocalVertices()
+        otherLocal = other.getLocalVertices()
         # GJK 
-        # we can turn the vertices into a matrix and then do a matrix-vector multiplication to find 
-        # the maximum dot product with arg max and find the most extreme points to take the difference from
         def triple(a,b,c):
             a = np.append(a,0)
             b = np.append(b,0)
@@ -28,15 +29,15 @@ class Collider2D(Collider):
             return res[:2]
 
         def supportPoint(dir):
-            selfExtreme = self.vertices[np.argmax(self.vertices @ dir)]
-            otherExtreme = other.vertices[np.argmax(other.vertices @ -dir)]
+            selfExtreme = selfLocal[np.argmax(selfLocal @ dir)]
+            otherExtreme = otherLocal[np.argmax(otherLocal @ -dir)]           
             return selfExtreme - otherExtreme 
         
         def handleSimplex(simplex, dir):
             # buidling simplex from line
             if len(simplex) == 2:
                 # dir = np.cross(np.cross(simplex[1] - simplex[0], simplex[0]), simplex[1]-simplex[0])
-                dir = triple(simplex[1] - simplex[0],simplex[0],simplex[1] - simplex[0])
+                dir = triple(simplex[1] - simplex[0], simplex[0], simplex[1] - simplex[0])
                 dir = dir / np.linalg.norm(dir)
                 return False
             
@@ -51,14 +52,14 @@ class Collider2D(Collider):
             if np.dot(abperp, -a) > 0:    
                 simplex.pop(0)
                 return False
-            elif np.dot(acperp,-a):
+            elif np.dot(acperp,-a) > 0:
                 simplex.pop(1)
                 return False
             else:
                 return True             
             
         simplex = []
-        dir = np.array([1,0])
+        dir = np.array([-1,-1])
         support = supportPoint(dir)
         simplex.append(support)
         dir = -support / np.linalg.norm(-support)
@@ -70,7 +71,18 @@ class Collider2D(Collider):
             simplex.append(support)
             if handleSimplex(simplex, dir):
                 return True  
-            
+        
+    def getLocalVertices(self):
+        # localVertices = self.parent.transform.position + 
+        result = []
+        rotmat = np.array(
+            [[np.cos(self.parent.transform.orientation), -np.sin(self.parent.transform.orientation)],
+             [np.sin(self.parent.transform.orientation), np.cos(self.parent.transform.orientation)]]
+        )
+        for vertex in self.vertices:
+            result.append(self.parent.transform.position + rotmat @ vertex )
+        return np.array(result)
+    
 class CircleCollider(Collider2D):
     pass
 

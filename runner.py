@@ -37,9 +37,9 @@ if __name__ == "__main__":
     
     square = SquareEntity(2,"red",gravity_enabled=False)
     square2 = SquareEntity(1,"blue",gravity_enabled=False)
-    square.transform.orientation = np.pi/4
-    square.transform.shift(np.array([6,0]))
-    square2.transform.shift(np.array([-6,0]))
+    # square.transform.orientation = np.pi/4
+    # square.transform.shift(np.array([6,0]))
+    # square2.transform.shift(np.array([-6,0]))
 
     # circle = Circle(1,gravity_enabled=False)
     # circle.dynamics.set(velocity=np.array([1,0]))
