@@ -35,7 +35,7 @@ class ExplicitEuclid3D(Solver):
         a = entity.dynamics.netAcceleration()
 
         angv = dyn.angular_velocity
-        anga = dyn.angular_acceleration
+        anga = dyn.angular_acceleration # will need to properly calculate through inerta tensor
 
         v += a * dt
         angv += anga * dt

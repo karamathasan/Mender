@@ -7,6 +7,12 @@ class Transform():
         self.orientation: float | Quaternion
         pass
 
+    def shift():
+        pass
+
+    def rotate():
+        pass
+
 class Transform2D(Transform):
     """
     An object used to hold information about elements and entities in 2D world space

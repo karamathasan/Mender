@@ -9,6 +9,7 @@ class SpatialTree(ABC):
         self.capacity = capacity
         self.children = []
         self.parent = parent
+        self.is_leaf = True # this may be unnecessary
 
         """
         A each tree should decide how to add in their elements.
@@ -43,10 +44,23 @@ class QuadTree(SpatialTree):
         self.children = []
 
     def add(self, entity: Entity2D):
-        self.children.append(entity)
-        if len(self.children) > self.capacity:
-            self.split()
-
+        if self.is_leaf:
+            self.children.append(entity)
+            if len(self.children) > self.capacity:
+                self.split()
+                self.is_leaf = False
+        else:
+            if entity.transform.position[0] >= self.transform.position[0]:
+                if entity.transform.position[1] >= self.transform.position[1]:
+                    self.children[3].add(entity)
+                else:
+                    self.children[2].add(entity)
+            else:
+                if entity.transform.position[1] >= self.transform.position[1]:
+                    self.children[4].add(entity)
+                else:
+                    self.children[1].add(entity)
+                    
     def split(self):
         dim = (self.dimensions[0]//2, self.dimensions[1]//2)
         # quadrants are in counterclockwise order from the bottom left
@@ -55,17 +69,17 @@ class QuadTree(SpatialTree):
         q3 = QuadTree(dim, self.capacity, self.transform.position + np.array([self.dimensions[0]//2, self.dimensions[1]//2]), self)
         q4 = QuadTree(dim, self.capacity, self.transform.position + np.array([-self.dimensions[0]//2, self.dimensions[1]//2]), self)
         for child in self.children:
-            position = child.transform.position
-            if position[0] >= self.transform.position[0]:
-                if position[1] >= self.transform.position[1]:
-                    pass
+            if child.transform.position[0] >= self.transform.position[0]:
+                if child.transform.position[1] >= self.transform.position[1]:
+                    q3.add(child)
                 else:
-                    pass
+                    q2.add(child)
             else:
-                if position[1] >= self.transform.position[1]:
-                    pass 
+                if child.transform.position[1] >= self.transform.position[1]:
+                    q4.add(child)
                 else:
-                    pass
+                    q1.add(child)
+        self.children = [q1,q2,q3,q4]
 
     def __contains__(self):
         pass

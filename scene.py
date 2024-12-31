@@ -43,10 +43,10 @@ class Scene2D(Scene):
         for element in self.elements:
             self.camera.render(element)
     
-    def physicsStep(self):
+    def physicsStep(self, dt):
         for element in self.elements:
             if isinstance(element, Entity2D):
-                self.solver.solve(element)
+                self.solver.solve(element, dt)
         # update all physics objects in the scene
         return
 

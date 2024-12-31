@@ -4,6 +4,7 @@ from scene import Scene, Scene2D, Scene3D, Orthographic3D, Perspective3D
 from entities._2D.circle import Circle
 from elements._2D.circle import Circle as CircleElement
 from elements._2D.square import Square
+from entities._2D.square import Square as SquareEntity
 from entities._3D.cube import Cube as CubeEntity
 from elements._3D.cube import Cube as CubeElement
 from entities._3D.plane import Plane3D
@@ -15,7 +16,7 @@ from elements._2D.coordinategraph import CartesianGraph2D
 from physics.transform import Transform2D
 from rendering.quaternion import Quaternion
 
-from animation.shift import LinearShift2D, QuadraticShift2D
+from animation.shift import LinearShift2D, QuadraticShift2D, CubicShift2D
 from animation.animationgroup import ParallelGroup, DeadlineGroup, RaceGroup, SequentialGroup
 from animation.playable import Playable
 from presentation.presentation import Presentation
@@ -34,25 +35,28 @@ if __name__ == "__main__":
     p = Presentation()
     scene = Scene2D(screen=screen, fps=fps)
     
-    square = Square(1,"red")
-    # square.transform.orientation = np.pi/4
+    square = SquareEntity(2,"red",gravity_enabled=False)
+    square2 = SquareEntity(1,"blue",gravity_enabled=False)
+    square.transform.orientation = np.pi/4
+    square.transform.shift(np.array([6,0]))
+    square2.transform.shift(np.array([-6,0]))
 
-    # circle = Circle(1,gravity_enabled=True)
+    # circle = Circle(1,gravity_enabled=False)
     # circle.dynamics.set(velocity=np.array([1,0]))
 
-    circle = CircleElement(0.5)    
+    # circle = CircleElement(0.5)    
     # text = Text("hello", 22)
-    graph = CartesianGraph2D((5,5),(2,2))
-    graph.plotVec(end = np.array([-1,2]))
+    # graph = CartesianGraph2D((5,5),(2,2))
+    # graph.plotVec(end = np.array([-1,2]))
 
     # scene.add(text)
-    scene.add(graph)
-    scene.add(square, circle)
+    # scene.add(graph)
+    scene.add(square, square2)
 
-    p.add(scene, 
-        QuadraticShift2D(square, np.array([5,0]), 1),
-        # LinearShift2D(square, np.array([0,0]), 2)
-    )
+    # p.add(scene, 
+    #     QuadraticShift2D(square, np.array([5,0]), 1),
+    #     CubicShift2D(circle, np.array([-5,0]), 1)
+    # )
     
     # 3D
     # cube = CubeEntity(1, gravity_enabled=False)
@@ -76,6 +80,7 @@ if __name__ == "__main__":
     # plane = Plane3D()
 
     # _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
+    print(square2.collider.checkCollision(square.collider))
 
     elapsed_time = 0
     dt = 1/fps
@@ -86,14 +91,15 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
         screen.fill("black")
-        # scene.physicsStep()
-        # scene.render()
+        scene.physicsStep(dt)
+        scene.render()
+
+        # p.run(dt)
 
         # _3dscene.render()
         # _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
-
-        p.run(dt)
+        # print(square.collider)
         pygame.display.flip()
         dt = clock.tick(fps)/1000
 
