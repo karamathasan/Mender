@@ -41,29 +41,24 @@ if __name__ == "__main__":
             transform=Transform2D(np.array([randx,randy]))
     ))
 
-    elapsed_time = 0
-    dt = 1/fps
-    # _3dscene.render()
-    while running:
-        # poll for events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        screen.fill("black")
-        scene.physicsStep(dt)
-        scene.render()
+elapsed_time = 0
+while running:
+    # poll for events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-        # p.run(dt)
+    screen.fill("black")
 
-        # _3dscene.render()
-        # _3dscene.physicsStep(dt)
-        # cube.transform.rotate(0.5, np.array([0,1,0]))
-        # print(square.collider)
-        pygame.display.flip()
-        dt = clock.tick(fps)/1000
+    # scene.physicsStep()
+    # scene.render()
 
-        elapsed_time += dt
-        # print(f"true fps: {1/dt}")
+    _3dscene.render()
+    _3dscene.physicsStep()
+
+    pygame.display.flip()
+    clock.tick(fps)  
+    elapsed_time += 1/fps
 
     pygame.quit()
 
