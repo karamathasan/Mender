@@ -42,6 +42,7 @@ if __name__ == "__main__":
     ))
 
 elapsed_time = 0
+dt = 1/fps
 while running:
     # poll for events
     for event in pygame.event.get():
@@ -50,15 +51,12 @@ while running:
 
     screen.fill("black")
 
-    # scene.physicsStep()
-    # scene.render()
-
-    _3dscene.render()
-    _3dscene.physicsStep()
+    scene.physicsStep(dt)
+    scene.render()
 
     pygame.display.flip()
-    clock.tick(fps)  
-    elapsed_time += 1/fps
+    dt = clock.tick(fps)  
+    elapsed_time += dt
 
     pygame.quit()
 
