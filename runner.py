@@ -36,10 +36,13 @@ if __name__ == "__main__":
     scene = Scene2D(screen=screen, fps=fps)
     
     square = SquareEntity(2,"red",gravity_enabled=False)
-    square2 = SquareEntity(1,"blue",gravity_enabled=False)
+    square2 = SquareEntity(1,"white",gravity_enabled=False)
     # square.transform.orientation = np.pi/4
-    # square.transform.shift(np.array([6,0]))
-    # square2.transform.shift(np.array([-6,0]))
+    square.transform.shift(np.array([6,0]))
+    square2.transform.shift(np.array([-6,0]))
+
+    square.dynamics.set(velocity=np.array([-1,0]))
+    square2.dynamics.set(velocity=np.array([1,0]))
 
     # circle = Circle(1,gravity_enabled=False)
     # circle.dynamics.set(velocity=np.array([1,0]))
@@ -80,7 +83,6 @@ if __name__ == "__main__":
     # plane = Plane3D()
 
     # _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
-    print(square2.collider.checkCollision(square.collider))
 
     elapsed_time = 0
     dt = 1/fps

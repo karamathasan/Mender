@@ -9,8 +9,15 @@ class Solver(ABC):
 
 class ExplicitEuclid2D(Solver):
     def __init__(self):
-        # super().__init__(fps)
-        pass
+        self.entities = []
+
+    def initEntities(self, elements):
+        """
+        filters through a scene's elements to retrieve its entities
+        """
+        for element in elements:
+            if isinstance(element, Entity2D):
+                self.entities.append(element)
     
     def solve(self, entity: Entity2D, dt):
         # constraints will visit the solver to provide or edit calculations
@@ -22,10 +29,41 @@ class ExplicitEuclid2D(Solver):
         v += a * dt
         transform.shift(v * dt)
 
+    def handleCollsion(self, entity1, entity2):
+        v1 = entity1.dynamics.velocity 
+        v2 = entity2.dynamics.velocity
+        m1 = entity1.mass
+        m2 = entity2.mass
+        sysmomentum = m1 * v1 + m2 * v2
+        sysmass = m1 + m2
+        v1new = ((v1-v2) * m1 + sysmomentum)/sysmass
+        v2new = ((v2-v1) * m2 + sysmomentum)/sysmass
+
+        entity1.dynamics.set(velocity=v1new)
+        entity2.dynamics.set(velocity=v2new)
+
+    # experimental method
+    def solveEntities(self, dt):
+        for entity1 in self.entities:
+            for entity2 in self.entities:
+                if entity1 != entity2:
+                    collision = entity1.collider.checkCollision(entity2.collider) 
+                    if collision:
+                        # print("collision")
+                        self.handleCollsion(entity1, entity2)
+            self.solve(entity1,dt)
+
+
 class ExplicitEuclid3D(Solver):
     def __init__(self):
+        self.entities = []
         # super().__init__(fps)
         pass
+
+    def initEntities(self, elements):
+        for element in elements:
+            if isinstance(element, Entity3D):
+                self.entities.append(element)
     
     def solve(self, entity: Entity3D, dt: float):
         # constraints will visit the solver to provide or edit calculations

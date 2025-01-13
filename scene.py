@@ -33,21 +33,26 @@ class Scene2D(Scene):
 
         if solver is None:
             self.solver = ExplicitEuclid2D()
+            self.solver.initEntities(self.elements)
+            # print(self.solver.entities)
         else:
             self.solver = solver
         
     def add(self, *args: Element2D):
         self.elements.extend(args)
+        self.solver.initEntities(self.elements)
 
     def render(self):
         for element in self.elements:
             self.camera.render(element)
     
     def physicsStep(self, dt):
-        for element in self.elements:
-            if isinstance(element, Entity2D):
-                self.solver.solve(element, dt)
         # update all physics objects in the scene
+
+        # for element in self.elements:
+        #     if isinstance(element, Entity2D):
+        #         self.solver.solve(element, dt)
+        self.solver.solveEntities(dt)
         return
 
 # Note: +Z axis faces out of the screen, +Y is up and +X is to the right
