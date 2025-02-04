@@ -5,10 +5,12 @@ from abc import ABC
 # from rendering.face import Face, Triangle
 
 class RenderTask():
-    def __init__(self, points: tuple, depths: tuple, color: tuple):
+    def __init__(self, points: tuple, depths: tuple, color: tuple, normal):
         self.points = points
         self.depths = depths
         self.color = color
+
+        self.normal = normal
         
     def avgDepth(self):
         sum = 0

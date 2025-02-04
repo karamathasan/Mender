@@ -24,7 +24,7 @@ from presentation.presentation import Presentation
 if __name__ == "__main__":
     # pygame setup
     pygame.init()
-    screen = pygame.display.set_mode((1280/2, 720/2))
+    screen = pygame.display.set_mode((1280, 720))
 
     clock = pygame.time.Clock()
     running = True
@@ -32,17 +32,20 @@ if __name__ == "__main__":
 
     # Scene setup
     # 2D
-    p = Presentation()
-    scene = Scene2D(screen=screen, fps=fps)
+    # p = Presentation()
+    # scene = Scene2D(screen=screen, fps=fps)
     
-    square = SquareEntity(2,"red",gravity_enabled=False)
-    square2 = SquareEntity(1,"white",gravity_enabled=False)
-    # square.transform.orientation = np.pi/4
-    square.transform.shift(np.array([6,0]))
-    square2.transform.shift(np.array([-6,0]))
+    # square = SquareEntity(2,"red",gravity_enabled=False)
+    # square2 = SquareEntity(1,"white",gravity_enabled=False)
 
-    square.dynamics.set(velocity=np.array([-1,0]))
-    square2.dynamics.set(velocity=np.array([1,0]))
+    # square.transform.orientation = np.pi/5
+    # square2.transform.orientation = np.pi/4
+
+    # square.transform.shift(np.array([6,0]))
+    # square2.transform.shift(np.array([-6,0]))
+
+    # square.dynamics.set(velocity=np.array([-5,0]))
+    # square2.dynamics.set(velocity=np.array([5,0]))
 
     # circle = Circle(1,gravity_enabled=False)
     # circle.dynamics.set(velocity=np.array([1,0]))
@@ -54,7 +57,8 @@ if __name__ == "__main__":
 
     # scene.add(text)
     # scene.add(graph)
-    scene.add(square, square2)
+    # print(square2.collider.getGlobalVertices())
+    # scene.add(square, square2)
 
     # p.add(scene, 
     #     QuadraticShift2D(square, np.array([5,0]), 1),
@@ -72,17 +76,17 @@ if __name__ == "__main__":
     # cube2.transform.shift(np.array([0,0,-10]))
     # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 
-    # sphere = Sphere3D(1)
-    # sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
+    sphere = Sphere3D(1)
+    sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 
     # camera = Perspective3D(screen)
-    # camera = Orthographic3D(screen)
+    camera = Orthographic3D(screen)
     # camera.transform.shift(np.array([0,0,5]))
     # camera.transform.rotate(30, np.array([0,0,1]))
 
     # plane = Plane3D()
 
-    # _3dscene = Scene3D(cube, screen=screen, camera=camera, fps=fps)
+    _3dscene = Scene3D(sphere, screen=screen, camera=camera, fps=fps)
 
     elapsed_time = 0
     dt = 1/fps
@@ -93,20 +97,20 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
         screen.fill("black")
-        scene.physicsStep(dt)
-        scene.render()
+        # scene.physicsStep(dt)
+        # scene.render()
 
         # p.run(dt)
 
-        # _3dscene.render()
-        # _3dscene.physicsStep(dt)
+        _3dscene.render()
+        _3dscene.physicsStep(dt)
         # cube.transform.rotate(0.5, np.array([0,1,0]))
-        # print(square.collider)
+        # print(square.collider.checkCollision(square2.collider))
         pygame.display.flip()
         dt = clock.tick(fps)/1000
 
         elapsed_time += dt
-        # print(f"true fps: {1/dt}")
+        print(f"true fps: {1/dt}")
 
     pygame.quit()
 

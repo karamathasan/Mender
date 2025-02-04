@@ -19,8 +19,11 @@ class Collider2D(Collider):
     #could return none if there is not collision and a the simplex if there is. the simplex can then be used for EPA
     def checkCollision(self, other: Collider):
         assert isinstance(other, Collider2D)
-        selfLocal = self.getLocalVertices()
-        otherLocal = other.getLocalVertices()
+        selfLocal = self.getGlobalVertices()
+        otherLocal = other.getGlobalVertices()
+        # selfLocal = self.vertices
+        # otherLocal = other.vertices
+
         # GJK 
         def triple(a,b,c):
             a = np.append(a,0)
@@ -37,11 +40,10 @@ class Collider2D(Collider):
         def handleSimplex(simplex, dir):
             # buidling simplex from line
             if len(simplex) == 2:
-                # dir = np.cross(np.cross(simplex[1] - simplex[0], simplex[0]), simplex[1]-simplex[0])
                 dir = triple(simplex[1] - simplex[0], simplex[0], simplex[1] - simplex[0])
-                dir = dir / np.linalg.norm(dir)
-                return None
-            
+                dir = dir / (np.linalg.norm(dir) + 0.0001)
+                # return None
+                return False
             # simplex is complete
             a = simplex[2]
             ab = a-simplex[1]
@@ -50,27 +52,34 @@ class Collider2D(Collider):
             acperp = triple(a,ac,a)
             if np.dot(abperp, -a) > 0:    
                 simplex.pop(0)
-                return None
+                # return None
+                return False
             elif np.dot(acperp,-a) > 0:
                 simplex.pop(1)
-                return None
+                # return None
+                return False
             else:
-                return simplex             
+                # return simplex             
+                return True
             
         simplex = []
-        dir = np.array([-1,-1])
+        dir = np.array([1,0])
         support = supportPoint(dir)
         simplex.append(support)
         dir = -support / np.linalg.norm(-support)
 
         while True:
+            # print(len(simplex))
             support = supportPoint(dir)
             if np.dot(support,dir) < 0:
-                return None
+                # return None
+                return False
             simplex.append(support)
             if handleSimplex(simplex, dir):
-                return simplex  
+                # return simplex  
+                return True
 
+            
     def getPenetrationVector(self, other, polytope):
         assert isinstance(other, Collider2D)
         selfLocal = self.getLocalVertices()
@@ -122,7 +131,7 @@ class Collider2D(Collider):
 
         return minNormal.mult(minDistance + 0.001)
     
-    def getLocalVertices(self):
+    def getGlobalVertices(self):
         # localVertices = self.parent.transform.position + 
         result = []
         rotmat = np.array(

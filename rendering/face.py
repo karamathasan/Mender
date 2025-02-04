@@ -49,14 +49,16 @@ class Triangle(Face):
         screen_c = camera.Vec2Screen(global_c)
 
         basecolor = np.array([255,255,255])
-        diff = max(np.dot(camera.getGlobalDirection(),(self.parent.orientation * Quaternion.Vec2Quaternion(self.normal) * self.parent.orientation.conjugate()).toVec()), 0)
+        normGlobal = (self.parent.orientation * Quaternion.Vec2Quaternion(self.normal) * self.parent.orientation.conjugate()).toVec()
+        #diffuse lighting
+        diff = max(np.dot(camera.getGlobalDirection(),normGlobal), 0)
         color = np.array(basecolor * diff, dtype=int)
         r,g,b = color
-
         return RenderTask(
             (screen_a, screen_b, screen_c),
             (depth_a, depth_b, depth_c),
-            (r,g,b)
+            (r,g,b),
+            normGlobal
         )
 
     @staticmethod

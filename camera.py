@@ -96,7 +96,8 @@ class Camera3D(Camera):
         # self.renderer.clearPixels()
         tasks = []
         for task in element.draw(self):
-            tasks.append(task)
+            if np.dot(task.normal, self.getGlobalDirection()) > 0:
+                tasks.append(task)
         self.renderer.clear()
 
         self.renderer.rasterizeGPU(tasks)
