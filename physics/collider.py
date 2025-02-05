@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC
 import pygame
+import time
 
 class Collider(ABC):
     def __init__(self, parent, vertices):
@@ -21,10 +22,7 @@ class Collider2D(Collider):
         assert isinstance(other, Collider2D)
         selfLocal = self.getGlobalVertices()
         otherLocal = other.getGlobalVertices()
-        # selfLocal = self.vertices
-        # otherLocal = other.vertices
 
-        # GJK 
         def triple(a,b,c):
             a = np.append(a,0)
             b = np.append(b,0)
@@ -38,6 +36,7 @@ class Collider2D(Collider):
             return selfExtreme - otherExtreme 
         
         def handleSimplex(simplex, dir):
+            
             # buidling simplex from line
             if len(simplex) == 2:
                 dir = triple(simplex[1] - simplex[0], simplex[0], simplex[1] - simplex[0])
@@ -50,40 +49,41 @@ class Collider2D(Collider):
             ac = a-simplex[0]
             abperp = triple(a,ab,a)                
             acperp = triple(a,ac,a)
+
             if np.dot(abperp, -a) > 0:    
                 simplex.pop(0)
-                # return None
-                return False
+                return None
+                # return False
             elif np.dot(acperp,-a) > 0:
                 simplex.pop(1)
-                # return None
-                return False
+                return None
+                # return False
             else:
-                # return simplex             
-                return True
+                return simplex             
+                # return True
             
         simplex = []
-        dir = np.array([1,0])
+        # dir = np.array([1,0])
+        dir = other.getCenter() - self.getCenter()
         support = supportPoint(dir)
         simplex.append(support)
         dir = -support / np.linalg.norm(-support)
 
         while True:
-            # print(len(simplex))
             support = supportPoint(dir)
             if np.dot(support,dir) < 0:
-                # return None
-                return False
+                return None
+                # return False
             simplex.append(support)
             if handleSimplex(simplex, dir):
-                # return simplex  
-                return True
+                return simplex  
+                # return True
 
             
     def getPenetrationVector(self, other, polytope):
         assert isinstance(other, Collider2D)
-        selfLocal = self.getLocalVertices()
-        otherLocal = other.getLocalVertices()
+        selfLocal = self.getGlobalVertices()
+        otherLocal = other.getGlobalVertices()
 
         def triple(a,b,c):
             a = np.append(a,0)
@@ -99,18 +99,18 @@ class Collider2D(Collider):
 
         minIndex = 0
         minDistance = np.inf
-        minNormal
+        minNormal = np.array([1,0])
 
         while (minDistance == np.inf):
             for i in range(len(polytope)):
-                j = (i + 1) % polytope.length
+                j = (i + 1) % len(polytope)
 
                 vertexI = polytope[i].copy()
                 vertexJ = polytope[j].copy()
 
-                ij = vertexJ.sub(vertexI)
+                ij = vertexJ - vertexI
 
-                normal = np.array([ij.y, -ij.x]) / np.linalg.norm([ij.y, -ij.x])
+                normal = np.array([ij[1], -ij[0]]) / (np.array([ij[1], -ij[0]]) + 0.0001)
                 distance = normal.dot(vertexI)
 
                 if (distance < 0):
@@ -121,18 +121,16 @@ class Collider2D(Collider):
                     minDistance = distance
                     minNormal = normal
                     minIndex = j
-            support = supportPoint(self.vertices, other.vertices, minNormal)
+            support = supportPoint(minNormal)
             sDistance = np.dot(support, minNormal)
 
             if (abs(sDistance - minDistance) > 0.001):
                 minDistance = np.inf
-                # polytope.splice(minIndex, 0, support)
                 polytope.insert(minIndex, support)
 
-        return minNormal.mult(minDistance + 0.001)
+        return minNormal * (minDistance + 0.001)
     
     def getGlobalVertices(self):
-        # localVertices = self.parent.transform.position + 
         result = []
         rotmat = np.array(
             [[np.cos(self.parent.transform.orientation), -np.sin(self.parent.transform.orientation)],
@@ -141,6 +139,12 @@ class Collider2D(Collider):
         for vertex in self.vertices:
             result.append(self.parent.transform.position + rotmat @ vertex )
         return np.array(result)
+    
+    def getCenter(self):
+        sum = 0
+        for vertex in self.vertices:
+            sum += vertex
+        return sum/len(self.vertices)
     
 class CircleCollider(Collider2D):
     pass

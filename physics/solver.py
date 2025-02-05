@@ -29,15 +29,17 @@ class ExplicitEuclid2D(Solver):
         v += a * dt
         transform.shift(v * dt)
 
+    #can be inconsistent with some situations (objects phase through each other)
     def handleCollsion(self, entity1, entity2):
+        #linear
         v1 = entity1.dynamics.velocity 
         v2 = entity2.dynamics.velocity
         m1 = entity1.mass
         m2 = entity2.mass
         sysmomentum = m1 * v1 + m2 * v2
         sysmass = m1 + m2
-        v1new = ((v1-v2) * m1 + sysmomentum)/sysmass
-        v2new = ((v2-v1) * m2 + sysmomentum)/sysmass
+        v2new = ((v1-v2) * m1 + sysmomentum)/sysmass
+        v1new = ((v2-v1) * m2 + sysmomentum)/sysmass
 
         entity1.dynamics.set(velocity=v1new)
         entity2.dynamics.set(velocity=v2new)
@@ -47,13 +49,19 @@ class ExplicitEuclid2D(Solver):
         for entity1 in self.entities:
             for entity2 in self.entities:
                 if entity1 != entity2:
-                    collision = entity1.collider.checkCollision(entity2.collider) 
-                    if collision:
-                        # print("collision")
+                    simplex = entity1.collider.checkCollision(entity2.collider) 
+                    if simplex:
+                        # return
+                        v1 = entity1.collider.getPenetrationVector(entity2.collider,simplex)
+                        v2 = entity2.collider.getPenetrationVector(entity1.collider,simplex)
+                        entity1.transform.shift(v1)
+                        entity2.transform.shift(v2)
                         self.handleCollsion(entity1, entity2)
+                        # v1, v2 = self.handleCollsion(entity1, entity2)
+                        # entity1.dynamics.set(velocity = v1)
+                        # entity2.dynamics.set(velocity = v2)
             self.solve(entity1,dt)
-
-
+            
 class ExplicitEuclid3D(Solver):
     def __init__(self):
         self.entities = []

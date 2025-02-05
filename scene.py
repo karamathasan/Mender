@@ -49,10 +49,11 @@ class Scene2D(Scene):
     def physicsStep(self, dt):
         # update all physics objects in the scene
 
-        for element in self.elements:
-            if isinstance(element, Entity2D):
-                self.solver.solve(element, dt)
-        # self.solver.solveEntities(dt)
+        # for element in self.elements:
+        #     if isinstance(element, Entity2D):
+        #         self.solver.solve(element, dt)
+
+        self.solver.solveEntities(dt)
         return
 
 # Note: +Z axis faces out of the screen, +Y is up and +X is to the right
@@ -73,8 +74,9 @@ class Scene3D(Scene):
         self.elements.extend(args)
 
     def render(self):
-        for element in self.elements:
-            self.camera.render(element)
+        self.camera.render(self.elements)
+        # for element in self.elements:
+        #     self.camera.render(element)
 
     def physicsStep(self, dt):
         for element in self.elements:

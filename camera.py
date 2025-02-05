@@ -92,12 +92,13 @@ class Camera3D(Camera):
         direction = (self.transform.orientation * Quaternion.Vec2Quaternion(self.direction) * self.transform.orientation.conjugate()).toVec()
         return direction / np.linalg.norm(direction)
     
-    def render(self, element):
+    def render(self, elements):
         # self.renderer.clearPixels()
         tasks = []
-        for task in element.draw(self):
-            if np.dot(task.normal, self.getGlobalDirection()) > 0:
-                tasks.append(task)
+        for element in elements:
+            for task in element.draw(self):
+                if np.dot(task.normal, self.getGlobalDirection()) > 0:
+                    tasks.append(task)
         self.renderer.clear()
 
         self.renderer.rasterizeGPU(tasks)
