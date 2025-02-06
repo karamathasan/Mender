@@ -18,6 +18,7 @@ class Text(Element):
     def setText(self,text: str):
         self.text = text
 
+    #TODO: seems to be incorrectly setting y position for large magnitudes (<50)
     def draw(self, camera):
         render = self.font.render(self.text, False, self.color)
         render = pygame.surfarray.array3d(render)

@@ -32,38 +32,38 @@ if __name__ == "__main__":
 
     # Scene setup
     # 2D
-    # p = Presentation()
+    p = Presentation()
     scene = Scene2D(screen=screen, fps=fps)
     
-    square = SquareEntity(2,"red",20,gravity_enabled=False)
-    square2 = SquareEntity(1,"white",gravity_enabled=False)
+    # square = Square(2,"red")
+    # square2 = SquareEntity(1,"white",gravity_enabled=False)
 
     # square.transform.orientation = np.pi/5
     # square2.transform.orientation = np.pi/4
 
-    square.transform.shift(np.array([6,0]))
-    square2.transform.shift(np.array([0,-6]))
+    # square.transform.shift(np.array([6,0]))
+    # square2.transform.shift(np.array([0,-6]))
 
-    square.dynamics.set(velocity=np.array([-5,0]))
-    square2.dynamics.set(velocity=np.array([0,5]))
+    # square.dynamics.set(velocity=np.array([-5,0]))
+    # square2.dynamics.set(velocity=np.array([0,5]))
 
     # circle = Circle(1,gravity_enabled=False)
     # circle.dynamics.set(velocity=np.array([1,0]))
 
     # circle = CircleElement(0.5)    
-    # text = Text("hello", 22)
-    # graph = CartesianGraph2D((5,5),(2,2))
-    # graph.plotVec(end = np.array([-1,2]))
+    text = Text("hello", 22, Transform2D([0,8]))
+    graph = CartesianGraph2D((5,5),(1,1))
+    graph.plotVec(end = np.array([-1,2]))
 
-    # scene.add(text)
-    # scene.add(graph)
+    scene.add(text)
+    scene.add(graph)
     # print(square2.collider.getGlobalVertices())
-    scene.add(square, square2)
+    # scene.add(square, circle)
 
-    # p.add(scene, 
+    # p.add(scene, None)
         # QuadraticShift2D(square, np.array([5,0]), 1),
         # CubicShift2D(circle, np.array([-5,0]), 1)
-    # )
+    
     
     # 3D
     # cube = CubeEntity(1, gravity_enabled=False)
@@ -97,7 +97,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
         screen.fill("black")
-        scene.physicsStep(dt)
+        # scene.physicsStep(dt)
         scene.render()
 
         # p.run(dt)

@@ -74,11 +74,20 @@ class CartesianGraph2D(Element2D):
     def plotSatisfaction(self, assertion):
         pass
 
+    # def drawFunction(self):
+        
+
     def draw(self, camera):
         rotmat = np.array(
             [[np.cos(self.transform.orientation), -np.sin(self.transform.orientation)],
              [np.sin(self.transform.orientation), np.cos(self.transform.orientation)]]
         )
+
+        # def global2local(vec: np.ndarray):
+        #     res = rotmat @ vec
+        #     res += self.transform.position
+        #     return camera.Vec2Screen(res)
+
         def local2global(vec: np.ndarray):
             res = rotmat @ vec
             res += self.transform.position
@@ -106,9 +115,16 @@ class CartesianGraph2D(Element2D):
             pygame.draw.line(camera.screen, "white", start, end)
             pygame.draw.polygon(camera.screen, "white", (end, leftDiagonal, rightDiagonal), )
 
-        # def drawTicks():
-            # if self.dimensions:
-
+        def drawTicks():
+            for i in range(np.floor(self.dimensions[0]+1) * (self.scale[0])):
+                upper = camera.Vec2Screen(np.array([i * self.scale[0],0.5]))
+                lower = camera.Vec2Screen(np.array([i * self.scale[0],-0.5]))
+                pygame.draw.line(camera.screen, "white", upper, lower)
+            for j in range(np.floor(self.dimensions[0]+1) * (self.scale[1])):
+                left = camera.Vec2Screen(np.array([0.5, j * self.scale[1]]))
+                right = camera.Vec2Screen(np.array([-0.5, j * self.scale[1]]))
+                pygame.draw.line(camera.screen, "white", left, right)
+        
         origin = camera.Vec2Screen(self.transform.position)
         # tick marks can be added through finding local coordinates of the graph through its transform
 
@@ -119,6 +135,7 @@ class CartesianGraph2D(Element2D):
         else:
             xLen = self.dimensions[0]
             yLen = self.dimensions[1]
+            drawTicks()
             
         if origin.x < camera.screen.get_size()[0] and origin.y < camera.screen.get_size()[1]:
             xDir = rotmat @ np.array([1,0]) 
