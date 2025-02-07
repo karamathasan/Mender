@@ -52,11 +52,15 @@ if __name__ == "__main__":
 
     # circle = CircleElement(0.5)    
     text = Text("hello", 22, Transform2D([0,8]))
-    graph = CartesianGraph2D((5,5),(1,1))
-    graph.plotVec(end = np.array([-1,2]))
+    graph = CartesianGraph2D((5,5))
+    graph.plotVec(end = np.array([-5,5]))
+
+    graph.plotFunction(lambda x:  np.sin(x))
 
     scene.add(text)
     scene.add(graph)
+
+
     # print(square2.collider.getGlobalVertices())
     # scene.add(square, circle)
 
@@ -87,18 +91,18 @@ if __name__ == "__main__":
     # plane = Plane3D()
 
     # _3dscene = Scene3D(cube2, sphere, screen=screen, camera=camera, fps=fps)
+    scene.render()
 
     elapsed_time = 0
     dt = 1/fps
-    # _3dscene.render()
     while running:
         # poll for events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill("black")
+        # screen.fill("black")
         # scene.physicsStep(dt)
-        scene.render()
+        # scene.render()
 
         # p.run(dt)
 

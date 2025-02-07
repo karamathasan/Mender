@@ -18,6 +18,9 @@ class Camera(ABC):
     def render(self, element):
         element.draw(self)
 
+    def Screen2Vec(self, pix: pygame.Vector2) -> np.ndarray:
+        pass
+
     def Vec2Screen(self, coordinate: np.ndarray) -> pygame.Vector2:
         pass
 
@@ -44,6 +47,12 @@ class Camera2D(Camera):
             self.transform = Transform2D(np.array([0,0]),0)
         else:
             self.transform = transform
+
+    def Screen2Vec(self, pix):
+        size = self.screen.get_size()
+        vecX = (pix.x - size[0]/2) * self.width / size[0]
+        vecY = (pix.y + size[1]/2) * self.width / size[1]
+        return np.array([vecX,vecY])
 
     def Vec2Screen(self, vec: np.ndarray):
         # TODO: account for camera orientation

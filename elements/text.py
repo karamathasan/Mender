@@ -24,7 +24,7 @@ class Text(Element):
         render = pygame.surfarray.array3d(render)
         position = camera.Vec2Screen(self.transform.position)
         render = self.paste(camera, render, position)
-        pygame.surfarray.blit_array(camera.screen,render)
+        pygame.surfarray.blit_array(camera.screen, render)
 
         # origin = camera.Vec2Screen(self.transform.position)
         # camera.screen.blit(render,origin)

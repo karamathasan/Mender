@@ -11,7 +11,10 @@ class CartesianGraph2D(Element2D):
         # dimensions are lengths in world space
         # the scale of the dimensions will fit scale * dimension ticks
         self.dimensions = dimensions
-        self.scale = scale
+        if scale:
+            self.scale = scale
+        else:
+            self.scale = (1,1)
 
         self.points = []
         self.plots = []
@@ -38,9 +41,10 @@ class CartesianGraph2D(Element2D):
     #     return res
 
     def plotFunction(self, function: types.FunctionType):
+        print(type(function))
         self.functions.append(function)
 
-    def plotFunctionGPU(self, function: str):
+    def drawFunctionGPU(self, function: str):
         # self.screen = screen
         # self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
         # self.pxarray = np.array(self.pxarray, np.int32(0))
@@ -71,11 +75,26 @@ class CartesianGraph2D(Element2D):
         # "2 * x", "2 ** x", "x * x + 2 * x + 2"
         pass
 
-    def plotSatisfaction(self, assertion):
+    def drawSatisfaction(self, assertion):
         pass
 
-    # def drawFunction(self):
-        
+    def drawFunctions(self, camera):
+        for function in self.functions:
+            # overlay = np.zeros(shape=camera.get_size())
+            leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
+            rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
+            # upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
+            # lowerBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
+            print(leftBound)
+            print(rightBound)
+            for xPix in range(leftBound,rightBound):
+                x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
+                y = function(x) 
+                yPix = int(camera.Vec2Screen(np.array([x,y])).y)
+                # yPix = min(yPix, upperBound)
+                # yPix = max(yPix, lowerBound)
+                camera.screen.set_at((xPix,yPix),(255,255,255))
+                print(xPix, yPix)
 
     def draw(self, camera):
         rotmat = np.array(
@@ -89,6 +108,7 @@ class CartesianGraph2D(Element2D):
         #     return camera.Vec2Screen(res)
 
         def local2global(vec: np.ndarray):
+            vec = np.array([vec[0] / self.scale[0], vec[1] / self.scale[1]])
             res = rotmat @ vec
             res += self.transform.position
             return camera.Vec2Screen(res)
@@ -116,14 +136,28 @@ class CartesianGraph2D(Element2D):
             pygame.draw.polygon(camera.screen, "white", (end, leftDiagonal, rightDiagonal), )
 
         def drawTicks():
-            for i in range(np.floor(self.dimensions[0]+1) * (self.scale[0])):
-                upper = camera.Vec2Screen(np.array([i * self.scale[0],0.5]))
-                lower = camera.Vec2Screen(np.array([i * self.scale[0],-0.5]))
+            for i in range(int(self.dimensions[0] * self.scale[0] + 1)):
+                upper = camera.Vec2Screen(np.array([i / self.scale[0],0.2]))
+                lower = camera.Vec2Screen(np.array([i / self.scale[0],-0.2]))
                 pygame.draw.line(camera.screen, "white", upper, lower)
-            for j in range(np.floor(self.dimensions[0]+1) * (self.scale[1])):
-                left = camera.Vec2Screen(np.array([0.5, j * self.scale[1]]))
-                right = camera.Vec2Screen(np.array([-0.5, j * self.scale[1]]))
+
+                upper = camera.Vec2Screen(-np.array([i / self.scale[0],0.2]))
+                lower = camera.Vec2Screen(-np.array([i / self.scale[0],-0.2]))
+                pygame.draw.line(camera.screen, "white", upper, lower)
+
+            for j in range(int(self.dimensions[1] * self.scale[1] + 1)):
+                left = camera.Vec2Screen(np.array([0.2, j / self.scale[1]]))
+                right = camera.Vec2Screen(np.array([-0.2, j / self.scale[1]]))
+
                 pygame.draw.line(camera.screen, "white", left, right)
+                left = camera.Vec2Screen(-np.array([0.2, j / self.scale[1]]))
+                right = camera.Vec2Screen(-np.array([-0.2, j / self.scale[1]]))
+                pygame.draw.line(camera.screen, "white", left, right)
+                
+            del left
+            del right
+            del upper
+            del lower
         
         origin = camera.Vec2Screen(self.transform.position)
         # tick marks can be added through finding local coordinates of the graph through its transform
@@ -156,4 +190,6 @@ class CartesianGraph2D(Element2D):
 
         for vec in self.vectors:
             drawVector(*vec)
+
+        self.drawFunctions(camera)
         
