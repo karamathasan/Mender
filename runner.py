@@ -23,7 +23,12 @@ from animation.animationgroup import ParallelGroup, DeadlineGroup, RaceGroup, Se
 from animation.playable import Playable
 from presentation.presentation import Presentation
 
+from rendering.triangulation import Draftlaunay
 if __name__ == "__main__":
+    #TESTING STUF BEN HI
+    naive=Draftlaunay()
+    naive.triangulate()
+
     # pygame setup
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
