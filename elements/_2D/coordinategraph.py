@@ -20,6 +20,7 @@ class CartesianGraph2D(Element2D):
         self.plots = []
         self.vectors = []
         self.functions = []
+        self.satisfactions = []
 
         if transform:
             self.transform = transform
@@ -36,14 +37,33 @@ class CartesianGraph2D(Element2D):
         if not (start, end) in self.vectors:
             self.vectors.append((start, end))
 
-    # def translateFunction(self, function: types.FunctionType):
-    #     res = ""
-    #     return res
-
+    #TODO: create function caching/sleeping
+    #if the function definition does not change with time, then cache the produced image rather than recalculate
     def plotFunction(self, function: types.FunctionType):
-        print(type(function))
         self.functions.append(function)
 
+    def plotSatisfaction(self, satisfaction):
+        """
+        Include points (x,y) that satisfy the function passed
+        Parameters:
+            satisfaction: lambda x,y -> bool
+        """
+        self.satisfactions.append(satisfaction)
+
+    def drawFunctions(self, camera):
+        for function in self.functions:
+            # overlay = np.zeros(shape=camera.get_size())
+            leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
+            rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
+            upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
+            lowerBound = int(camera.Vec2Screen(np.array([0, -self.dimensions[1]]) + self.transform.position).y)
+            for xPix in range(leftBound,rightBound):
+                x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
+                y = function(x) 
+                yPix = int(camera.Vec2Screen(np.array([x,y])).y)
+                if -lowerBound < -yPix < -upperBound:
+                    camera.screen.set_at((xPix,yPix),(255,255,255))
+  
     def drawFunctionGPU(self, function: str):
         # self.screen = screen
         # self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
@@ -75,26 +95,26 @@ class CartesianGraph2D(Element2D):
         # "2 * x", "2 ** x", "x * x + 2 * x + 2"
         pass
 
-    def drawSatisfaction(self, assertion):
-        pass
-
-    def drawFunctions(self, camera):
-        for function in self.functions:
-            # overlay = np.zeros(shape=camera.get_size())
+    def drawSatisfactions(self, camera, density = 1):
+        for satisfaction in self.satisfactions:
             leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
             rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
-            # upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
-            # lowerBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
-            print(leftBound)
-            print(rightBound)
+            upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
+            lowerBound = int(camera.Vec2Screen(np.array([0, -self.dimensions[1]]) + self.transform.position).y)
+            # print(upperBound < lowerBound)
             for xPix in range(leftBound,rightBound):
-                x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
-                y = function(x) 
-                yPix = int(camera.Vec2Screen(np.array([x,y])).y)
-                # yPix = min(yPix, upperBound)
-                # yPix = max(yPix, lowerBound)
-                camera.screen.set_at((xPix,yPix),(255,255,255))
-                print(xPix, yPix)
+                for yPix in range(upperBound,lowerBound):
+                    if xPix % int(1/density) != 0 or yPix % int(1/density) != 0:
+                        continue
+
+                    vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
+
+                    # print(vec[0]*vec[0] + vec[1]*vec[1])
+                    if satisfaction(vec[0],vec[1]):
+                        camera.screen.set_at((xPix,yPix),(255,255,255))
+    
+    def drawSatisfactionsGPU():
+        pass 
 
     def draw(self, camera):
         rotmat = np.array(
@@ -192,4 +212,5 @@ class CartesianGraph2D(Element2D):
             drawVector(*vec)
 
         self.drawFunctions(camera)
+        self.drawSatisfactions(camera,0.1)
         

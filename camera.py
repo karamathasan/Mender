@@ -51,7 +51,7 @@ class Camera2D(Camera):
     def Screen2Vec(self, pix):
         size = self.screen.get_size()
         vecX = (pix.x - size[0]/2) * self.width / size[0]
-        vecY = (pix.y + size[1]/2) * self.width / size[1]
+        vecY = (-pix.y + size[1]/2) * self.width / size[0]
         return np.array([vecX,vecY])
 
     def Vec2Screen(self, vec: np.ndarray):
