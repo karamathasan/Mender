@@ -6,6 +6,7 @@ from elements._2D.circle import Circle as CircleElement
 from elements._2D.square import Square
 from entities._2D.square import Square as SquareEntity
 from elements._2D.point import Point2D
+from elements._2D.point import Point2D
 from entities._3D.cube import Cube as CubeEntity
 from elements._3D.cube import Cube as CubeElement
 from entities._3D.plane import Plane3D
