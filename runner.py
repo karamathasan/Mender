@@ -53,11 +53,11 @@ if __name__ == "__main__":
     # circle = CircleElement(0.5)    
     # text = Text("hello", 22, Transform2D([0,8]))
     graph = CartesianGraph2D((5,5))
-    # graph.plotVec(end = np.array([-2,5]))
+    graph.plotVec(np.array([-2,5]))
 
-    # graph.plotFunction(lambda x:  np.sin(x))
-    # graph.plotSatisfaction(lambda x,y : abs(x ** 2 - y) < 0.01)
-    graph.plotSatisfaction(lambda x, y : x * x > y )
+    graph.plotFunction(lambda x:  np.sin(x))
+    graph.plotSatisfaction(lambda x,y : abs(x * x + y * y - 4) < 0.05)
+    # graph.plotSatisfaction(lambda x, y : x * x > y )
 
     # scene.add(text)
     scene.add(graph)

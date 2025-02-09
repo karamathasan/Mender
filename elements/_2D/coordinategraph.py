@@ -1,9 +1,11 @@
 from element import Element2D
 from physics.transform import Transform2D
-import numpy as np
-import pygame
+from elements._2D.coordinategraphelement import CoordinateVector2D, SatisfactionGraph2D, FunctionGraph2D
+
 import pyopencl as cl
 import types
+import numpy as np
+import pygame
 
 class CartesianGraph2D(Element2D):
     def __init__(self, dimensions:tuple = None, scale:tuple = None, transform:Transform2D = None):
@@ -17,10 +19,12 @@ class CartesianGraph2D(Element2D):
             self.scale = (1,1)
 
         self.points = []
-        self.plots = []
-        self.vectors = []
-        self.functions = []
-        self.satisfactions = []
+        # self.plots = []
+        # self.vectors = []
+        # self.functions = []
+        # self.satisfactions = []
+
+        self.graphElements = []
 
         if transform:
             self.transform = transform
@@ -32,15 +36,18 @@ class CartesianGraph2D(Element2D):
         if not point in self.points:
             self.points.append(point)
 
-    def plotVec(self, start: np.ndarray = np.array([0,0]), end:np.ndarray = None):
-        assert end is not None, "Invalid end"
-        if not (start, end) in self.vectors:
-            self.vectors.append((start, end))
+    def plotVec(self, tip, tail: np.ndarray = np.array([0,0])):
+        vecG = CoordinateVector2D(self, tip, tail)
+        self.graphElements.append(vecG)
+        # if not (start, end) in self.vectors:
+            # self.vectors.append((start, end))
 
     #TODO: create function caching/sleeping
     #if the function definition does not change with time, then cache the produced image rather than recalculate
     def plotFunction(self, function: types.FunctionType):
-        self.functions.append(function)
+        # self.functions.append(function)
+        functionG = FunctionGraph2D(self, function)
+        self.graphElements.append(functionG)
 
     def plotSatisfaction(self, satisfaction):
         """
@@ -48,84 +55,17 @@ class CartesianGraph2D(Element2D):
         Parameters:
             satisfaction: lambda x,y -> bool
         """
-        self.satisfactions.append(satisfaction)
+        # self.satisfactions.append(satisfaction)
+        satisfactionG = SatisfactionGraph2D(self, satisfaction)
+        self.graphElements.append(satisfactionG)
 
-    def drawFunctions(self, camera):
-        for function in self.functions:
-            # overlay = np.zeros(shape=camera.get_size())
-            leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
-            rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
-            upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
-            lowerBound = int(camera.Vec2Screen(np.array([0, -self.dimensions[1]]) + self.transform.position).y)
-            for xPix in range(leftBound,rightBound):
-                x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
-                y = function(x) 
-                yPix = int(camera.Vec2Screen(np.array([x,y])).y)
-                if -lowerBound < -yPix < -upperBound:
-                    camera.screen.set_at((xPix,yPix),(255,255,255))
-  
-    def drawFunctionGPU(self, function: str):
-        # self.screen = screen
-        # self.pxarray = pygame.surfarray.array3d(screen) #indexed in the same way the zbuffer is
-        # self.pxarray = np.array(self.pxarray, np.int32(0))
 
-        # platform = cl.get_platforms()[0]
-        # device = platform.get_devices()[0]
-
-        # self.ctx = cl.Context([device])
-        # self.queue = cl.CommandQueue(self.ctx)
-
-        # mf = cl.mem_flags
-        # self.pxarray_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
-        
-        # self.prg = cl.Program(self.ctx, """
-        # __kernel void plotFunc(
-        #         __global__ float *pxarray_g,
-        #         float xmin,
-        #         float xmax,
-        #         int width, 
-        #         int height)
-        #     {
-        #         float y = """ + function + """;
-        #     } 
-        # """ ).build()
-        # for all x present in screen, graph the corresponding y
-        # str is expected to in the form:
-        
-        # "2 * x", "2 ** x", "x * x + 2 * x + 2"
-        pass
-
-    def drawSatisfactions(self, camera, density = 1):
-        for satisfaction in self.satisfactions:
-            leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
-            rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
-            upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
-            lowerBound = int(camera.Vec2Screen(np.array([0, -self.dimensions[1]]) + self.transform.position).y)
-            # print(upperBound < lowerBound)
-            for xPix in range(leftBound,rightBound):
-                for yPix in range(upperBound,lowerBound):
-                    if xPix % int(1/density) != 0 or yPix % int(1/density) != 0:
-                        continue
-
-                    vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
-
-                    # print(vec[0]*vec[0] + vec[1]*vec[1])
-                    if satisfaction(vec[0],vec[1]):
-                        camera.screen.set_at((xPix,yPix),(255,255,255))
-    
-    def drawSatisfactionsGPU():
-        pass 
-
+    #TODO: all drawings of must consider the graph's position and orientation
     def draw(self, camera):
         rotmat = np.array(
             [[np.cos(self.transform.orientation), -np.sin(self.transform.orientation)],
              [np.sin(self.transform.orientation), np.cos(self.transform.orientation)]]
         )
-
-        # def global2local(vec: np.ndarray):
-        #     res = rotmat @ vec
-        #     res += self.transform.position
-        #     return camera.Vec2Screen(res)
 
         def local2global(vec: np.ndarray):
             vec = np.array([vec[0] / self.scale[0], vec[1] / self.scale[1]])
@@ -133,28 +73,6 @@ class CartesianGraph2D(Element2D):
             res += self.transform.position
             return camera.Vec2Screen(res)
         
-        def drawVector(start = np.array([0,0]), end = None):
-            assert end is not None, "End invalid"
-            vecAngle = np.arctan2((end[1]-start[1]),(end[0]-start[0])) 
-            leftDiagonal = (-0.5,0.2)
-            rightDiagonal = (-0.5,-0.2)
-            leftDiagonal = np.array([
-                leftDiagonal[0] * np.cos(vecAngle) - leftDiagonal[1] * np.sin(vecAngle),
-                leftDiagonal[0] * np.sin(vecAngle) + leftDiagonal[1] * np.cos(vecAngle)
-            ])
-            rightDiagonal = np.array([
-                rightDiagonal[0] * np.cos(vecAngle) - rightDiagonal[1] * np.sin(vecAngle),
-                rightDiagonal[0] * np.sin(vecAngle) + rightDiagonal[1] * np.cos(vecAngle)
-            ])
-            leftDiagonal += end
-            rightDiagonal += end
-            start = local2global(start)
-            end = local2global(end)
-            leftDiagonal = local2global(leftDiagonal)
-            rightDiagonal = local2global(rightDiagonal)
-            pygame.draw.line(camera.screen, "white", start, end)
-            pygame.draw.polygon(camera.screen, "white", (end, leftDiagonal, rightDiagonal), )
-
         def drawTicks():
             for i in range(int(self.dimensions[0] * self.scale[0] + 1)):
                 upper = camera.Vec2Screen(np.array([i / self.scale[0],0.2]))
@@ -204,13 +122,16 @@ class CartesianGraph2D(Element2D):
             pygame.draw.line(camera.screen, "white", origin, top)
             pygame.draw.line(camera.screen, "white", origin, bottom)
 
-        for point in self.points:
-            position = local2global(point)
-            pygame.draw.circle(camera.screen, "white", position, 3)
+        # for point in self.points:
+        #     position = local2global(point)
+        #     pygame.draw.circle(camera.screen, "white", position, 3)
 
-        for vec in self.vectors:
-            drawVector(*vec)
+        # for vec in self.vectors:
+        #     drawVector(*vec)
 
-        self.drawFunctions(camera)
-        self.drawSatisfactions(camera,0.1)
+        # self.drawFunctions(camera)
+        # self.drawSatisfactions(camera,0.1)
+
+        for graphElement in self.graphElements:
+            graphElement.draw(camera)
         

@@ -1,4 +1,6 @@
 import numpy as np
+import scene
+
 class Triangulator():
     def __init__():
         pass
