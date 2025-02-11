@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC
 from physics.transform import Transform, Transform2D, Transform3D
-from entity import Entity2D, Entity3D
+from physics.entity import Entity2D, Entity3D
 
 class SpatialTree(ABC):
     def __init__(self, dimensions: tuple, capacity, parent):

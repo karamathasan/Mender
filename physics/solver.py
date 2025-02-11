@@ -1,6 +1,7 @@
 from abc import ABC
 import numpy as np
 from physics.entity import Entity, Entity2D, Entity3D
+from physics.spatialtree import QuadTree
 from rendering.quaternion import Quaternion
 
 class Solver(ABC):
@@ -10,6 +11,7 @@ class Solver(ABC):
 class ExplicitEuclid2D(Solver):
     def __init__(self):
         self.entities = []
+        # self.tree = QuadTree()
 
     def initEntities(self, elements):
         """
@@ -18,6 +20,7 @@ class ExplicitEuclid2D(Solver):
         for element in elements:
             if isinstance(element, Entity2D):
                 self.entities.append(element)
+                # self.tree.add(element)
     
     def solve(self, entity: Entity2D, dt):
         # constraints will visit the solver to provide or edit calculations
@@ -88,6 +91,5 @@ class ExplicitEuclid3D(Solver):
 
         transform.shift(v * dt)
         if np.linalg.norm(angv) > np.finfo(float).eps:
-            # print()
             transform.rotate(np.linalg.norm(angv) * dt, angv/np.linalg.norm(angv))
         # transform.rotate(0.1,np.array([1,0,0]))

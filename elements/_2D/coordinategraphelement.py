@@ -46,18 +46,18 @@ class CoordinateVector2D(CoordinateGraphElement2D):
         ])
         leftDiagonal += self.tip
         rightDiagonal += self.tip
-        self.tail = local2global(self.tail)
-        self.tip = local2global(self.tip)
+        tail = local2global(self.tail)
+        tip = local2global(self.tip)
         leftDiagonal = local2global(leftDiagonal)
         rightDiagonal = local2global(rightDiagonal)
-        pygame.draw.line(camera.screen, "white", self.tail, self.tip)
-        pygame.draw.polygon(camera.screen, "white", (self.tip, leftDiagonal, rightDiagonal), )
+        pygame.draw.line(camera.screen, "white", tail, tip)
+        pygame.draw.polygon(camera.screen, "white", (tip, leftDiagonal, rightDiagonal), )
 
 class FunctionGraph2D(CoordinateGraphElement2D):
     def __init__(self, parent, function: types.FunctionType):
         self.parent = parent
         self.function = function
-        self.cached = []
+        self.cached = None
 
     def __call__(self, *args):
         return self.function(*args)
@@ -66,16 +66,30 @@ class FunctionGraph2D(CoordinateGraphElement2D):
         self.drawNaive(camera)
 
     def drawNaive(self, camera):
-        leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
-        lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
-        for xPix in range(leftBound,rightBound):
-            x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
-            y = self.function(x) 
-            yPix = int(camera.Vec2Screen(np.array([x,y])).y)
-            if -lowerBound < -yPix < -upperBound:
-                camera.screen.set_at((xPix,yPix),(255,255,255))
+        if self.cached: #also check if the function and graph are unchanged
+            # pygame.surfarray.blit_array(camera.screen, self.cached[0]) 
+            for coordinate in self.cached:
+                camera.screen.set_at(coordinate,(255,255,255))
+        else:
+            size = camera.screen.get_size()
+            empty = np.zeros(shape=(*size,3))
+            cache = []
+
+            leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+            rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+            upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
+            lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
+            for xPix in range(leftBound,rightBound):
+                x = camera.Screen2Vec(pygame.Vector2(xPix,0))[0]
+                y = self.function(x) 
+                yPix = int(camera.Vec2Screen(np.array([x,y])).y)
+                if -lowerBound < -yPix < -upperBound:
+                    camera.screen.set_at((xPix,yPix),(255,255,255))
+
+                    cache.append((xPix,yPix))
+                    # empty[xPix, yPix] = [255,255,255]
+            # self.cached.append(empty)
+            self.cached = cache
 
     def drawGPU(self, camera):
         pass
@@ -104,7 +118,19 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
                     continue
                 vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
                 if self.satisfaction(vec[0],vec[1]):
-                    camera.screen.set_at((xPix,yPix),(255,255,255))
+                    camera.screen.set_at((xPix,yPix),(255,255,255))\
+
+    # def drawGPU(self, camera):
+    #     leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+    #     rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+    #     upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
+    #     lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
+    #     # print(upperBound < lowerBound)
+    #     for xPix in range(leftBound, rightBound):
+    #         for yPix in range(upperBound, lowerBound):
+    #             vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
+    #             if self.satisfaction(vec[0],vec[1]):
+    #                 camera.screen.set_at((xPix,yPix),(255,255,255))
 
 class CoordinateGraphElement3D(Element3D, ABC):
     def __init__(self):

@@ -51,16 +51,16 @@ if __name__ == "__main__":
     # circle.dynamics.set(velocity=np.array([1,0]))
 
     # circle = CircleElement(0.5)    
-    # text = Text("hello", 22, Transform2D([0,8]))
+    text = Text("hello", 22, Transform2D([0,8]))
     graph = CartesianGraph2D((5,5))
-    graph.plotVec(np.array([-2,5]))
 
+    graph.plotVec(np.array([-2,5]))
     graph.plotFunction(lambda x:  np.sin(x))
-    graph.plotSatisfaction(lambda x,y : abs(x * x + y * y - 4) < 0.05)
+    # graph.plotSatisfaction(lambda x,y : abs(x * x + y * y - 4) < 0.05)
     # graph.plotSatisfaction(lambda x, y : x * x > y )
 
-    # scene.add(text)
     scene.add(graph)
+    scene.add(text)
 
 
     # print(square2.collider.getGlobalVertices())
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # plane = Plane3D()
 
     # _3dscene = Scene3D(cube2, sphere, screen=screen, camera=camera, fps=fps)
-    scene.render()
+    # scene.render()
 
     elapsed_time = 0
     dt = 1/fps
@@ -102,9 +102,9 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        # screen.fill("black")
+        screen.fill("black")
         # scene.physicsStep(dt)
-        # scene.render()
+        scene.render()
 
         # p.run(dt)
 
