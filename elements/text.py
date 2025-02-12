@@ -24,16 +24,18 @@ class Text(Element):
         render = pygame.surfarray.array3d(render)
         position = camera.Vec2Screen(self.transform.position)
         render = self.paste(camera, render, position)
-        pygame.surfarray.blit_array(camera.screen, render) # creates screen wipe
+        # pygame.surfarray.blit_array(camera.screen, render) # creates screen wipe
 
         # origin = camera.Vec2Screen(self.transform.position)
         # camera.screen.blit(render,origin)
 
-    def paste(self, camera, arr, pos):
+    def paste(self, camera, arr: np.ndarray, pos):
         size = camera.screen.get_size()
-        empty = np.zeros(shape=(*size,3))
+        # empty = np.zeros(shape=(*size,3))
         for row in range(len(arr)):
             for column in range(len(arr[0])):
                 if pos[0] + row < size[0] and pos[0] + column < size[1]:
-                    empty[int(pos[0] + row),int(pos[1] + column)] = arr[row, column]
-        return empty
+                    # empty[int(pos[0] + row),int(pos[1] + column)] = arr[row, column]
+                    if np.all([arr[row, column] == [255,255,255]]):
+                        camera.screen.set_at((int(pos[0] + row),int(pos[1] + column)), (255,255,255))
+        # return empty

@@ -67,14 +67,10 @@ class FunctionGraph2D(CoordinateGraphElement2D):
 
     def drawNaive(self, camera):
         if self.cached: #also check if the function and graph are unchanged
-            # pygame.surfarray.blit_array(camera.screen, self.cached[0]) 
             for coordinate in self.cached:
                 camera.screen.set_at(coordinate,(255,255,255))
         else:
-            size = camera.screen.get_size()
-            empty = np.zeros(shape=(*size,3))
             cache = []
-
             leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
             rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
             upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
@@ -87,8 +83,6 @@ class FunctionGraph2D(CoordinateGraphElement2D):
                     camera.screen.set_at((xPix,yPix),(255,255,255))
 
                     cache.append((xPix,yPix))
-                    # empty[xPix, yPix] = [255,255,255]
-            # self.cached.append(empty)
             self.cached = cache
 
     def drawGPU(self, camera):
@@ -98,7 +92,7 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
     def __init__(self, parent, satisfaction: types.FunctionType):
         self.parent = parent
         self.satisfaction = satisfaction
-        self.cached = []
+        self.cached = None
 
     def __call__(self, *args):
         return self.function(*args)
@@ -107,19 +101,25 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
         self.drawNaive(camera)
 
     def drawNaive(self, camera, density = 1):
-        leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
-        lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
-        # print(upperBound < lowerBound)
-        for xPix in range(leftBound, rightBound):
-            for yPix in range(upperBound, lowerBound):
-                if xPix % int(1/density) != 0 or yPix % int(1/density) != 0:
-                    continue
-                vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
-                if self.satisfaction(vec[0],vec[1]):
-                    camera.screen.set_at((xPix,yPix),(255,255,255))\
-
+        if self.cached:
+            for coordinate in self.cached:
+                camera.screen.set_at(coordinate,(255,255,255))
+        else:
+            leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+            rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+            upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
+            lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
+            cache = []
+            for xPix in range(leftBound, rightBound):
+                for yPix in range(upperBound, lowerBound):
+                    if xPix % int(1/density) != 0 or yPix % int(1/density) != 0:
+                        continue
+                    vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
+                    if self.satisfaction(vec[0],vec[1]):
+                        camera.screen.set_at((xPix,yPix),(255,255,255))
+                        cache.append((xPix,yPix))
+            self.cached = cache
+            
     # def drawGPU(self, camera):
     #     leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
     #     rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
