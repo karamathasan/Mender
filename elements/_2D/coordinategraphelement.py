@@ -5,6 +5,9 @@ import types
 import numpy as np
 import pygame
 
+import pyopencl as cl
+
+
 class CoordinateGraphElement2D(Element2D, ABC):
     def __init__(self):
         self.parent = None
@@ -120,17 +123,71 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
                         cache.append((xPix,yPix))
             self.cached = cache
             
-    # def drawGPU(self, camera):
-    #     leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-    #     rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-    #     upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
-    #     lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
-    #     # print(upperBound < lowerBound)
-    #     for xPix in range(leftBound, rightBound):
-    #         for yPix in range(upperBound, lowerBound):
-    #             vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
-    #             if self.satisfaction(vec[0],vec[1]):
-    #                 camera.screen.set_at((xPix,yPix),(255,255,255))
+    def drawGPU(self, translation, camera):
+        screen = camera.screen
+        pxarray = pygame.surfarray.array3d(screen) 
+        pxarray = np.array(pxarray, np.int32(0))
+        platform = cl.get_platforms()[0]
+        device = platform.get_devices()[0]
+
+        # width = np.int32(screen.get_size()[0])
+        # height = np.int32(screen.get_size()[1])
+
+        ctx = cl.Context([device])
+        queue = cl.CommandQueue(ctx)
+
+        mf = cl.mem_flags
+        pxarray_buf = cl.Buffer(ctx, mf.WRITE | mf.COPY_HOST_PTR, hostbuf = pxarray)
+
+        leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+        rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+        upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
+        lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
+
+        width = rightBound - leftBound + 1
+        height = lowerBound - upperBound + 1
+
+        # size = self.screen.get_size()
+        # vecX = (pix.x - size[0]/2) * self.width / size[0]
+        # vecY = (-pix.y + size[1]/2) * self.width / size[0]
+        # return np.array([vecX,vecY])
+
+        prg = cl.Program(ctx,"""
+        __kernel void draw(
+            __global int *pxarray,
+            const int screenWidth,
+            const int screenHeight,
+            const int cameraWidth,
+            const int xmin,
+            const int ymin)
+            {
+                int gidx = get_global_id(0);
+                int gidy = get_global_id(1);
+                int pxidx = 3 * (ymin + gidy) + height * (xmin + gidx);
+                
+                int vecx = (gidx - screenWidth/2) * cameraWidth / screenWidth;
+                int vecy = (-gidy + screenHeight/2) * cameraWidth / screenWidth;
+                
+                if ("""+ translation +"""){
+                    pxarray[pxidx] = 255;
+                    pxarray[pxidx] = 255;
+                    pxarray[pxidx] = 255;
+                }
+            }
+        """).build()
+
+        knl = prg.draw
+        knl(queue, (width,height), None, pxarray_buf)
+
+        cl.enqueue_copy(queue, pxarray, pxarray_buf) 
+
+
+        # print(upperBound < lowerBound)
+        # for xPix in range(leftBound, rightBound):
+        #     for yPix in range(upperBound, lowerBound):
+        #         vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
+        #         if self.satisfaction(vec[0],vec[1]):
+        #             camera.screen.set_at((xPix,yPix),(255,255,255))
 
 class CoordinateGraphElement3D(Element3D, ABC):
     def __init__(self):
