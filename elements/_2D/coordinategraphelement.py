@@ -101,7 +101,8 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
         return self.function(*args)
     
     def draw(self, camera):
-        self.drawNaive(camera)
+        # self.drawNaive(camera)
+        self.drawGPU("vecy - vecy == 0", camera)
 
     def drawNaive(self, camera, density = 1):
         if self.cached:
@@ -130,22 +131,22 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
         platform = cl.get_platforms()[0]
         device = platform.get_devices()[0]
 
-        # width = np.int32(screen.get_size()[0])
-        # height = np.int32(screen.get_size()[1])
+        screenWidth = np.int32(screen.get_size()[0])
+        screenHeight = np.int32(screen.get_size()[1])
 
         ctx = cl.Context([device])
         queue = cl.CommandQueue(ctx)
 
         mf = cl.mem_flags
-        pxarray_buf = cl.Buffer(ctx, mf.WRITE | mf.COPY_HOST_PTR, hostbuf = pxarray)
+        pxarray_buf = cl.Buffer(ctx, mf.WRITE_ONLY | mf.COPY_HOST_PTR, hostbuf = pxarray)
 
-        leftBound = int(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        rightBound = int(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
-        upperBound = int(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
-        lowerBound = int(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
+        leftBound = np.int32(camera.Vec2Screen(np.array([-self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+        rightBound = np.int32(camera.Vec2Screen(np.array([self.parent.dimensions[0],0]) + self.parent.transform.position).x)
+        upperBound = np.int32(camera.Vec2Screen(np.array([0, self.parent.dimensions[1]]) + self.parent.transform.position).y)
+        lowerBound = np.int32(camera.Vec2Screen(np.array([0, -self.parent.dimensions[1]]) + self.parent.transform.position).y)
 
-        width = rightBound - leftBound + 1
-        height = lowerBound - upperBound + 1
+        graphWidth = np.int32(rightBound - leftBound + 1)
+        graphHeight = np.int32(lowerBound - upperBound + 1)
 
         # size = self.screen.get_size()
         # vecX = (pix.x - size[0]/2) * self.width / size[0]
@@ -158,36 +159,43 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
             const int screenWidth,
             const int screenHeight,
             const int cameraWidth,
+            const int graphHeight,
             const int xmin,
             const int ymin)
             {
                 int gidx = get_global_id(0);
                 int gidy = get_global_id(1);
-                int pxidx = 3 * (ymin + gidy) + height * (xmin + gidx);
+                         
+                int pixx = xmin + gidx;
+                int pixy = ymin + gidy;
+                int pxidx = 3 * (ymin + gidy) + graphHeight * (xmin + gidx);
                 
-                int vecx = (gidx - screenWidth/2) * cameraWidth / screenWidth;
-                int vecy = (-gidy + screenHeight/2) * cameraWidth / screenWidth;
+                int vecx = (pixx - screenWidth/2) * cameraWidth / screenWidth;
+                int vecy = (-pixy + screenHeight/2) * cameraWidth / screenWidth;
                 
-                if ("""+ translation +"""){
+                // if ("""+ translation +"""){
                     pxarray[pxidx] = 255;
-                    pxarray[pxidx] = 255;
-                    pxarray[pxidx] = 255;
-                }
+                    pxarray[pxidx+1] = 255;
+                    pxarray[pxidx+2] = 255;
+                // }
             }
         """).build()
 
         knl = prg.draw
-        knl(queue, (width,height), None, pxarray_buf)
+        knl(queue, (graphWidth,graphHeight), None, 
+            pxarray_buf,
+            screenWidth,
+            screenHeight,
+            np.int32(camera.width),
+            graphHeight,
+            leftBound,
+            lowerBound
+        )
 
         cl.enqueue_copy(queue, pxarray, pxarray_buf) 
+        print("call")
 
-
-        # print(upperBound < lowerBound)
-        # for xPix in range(leftBound, rightBound):
-        #     for yPix in range(upperBound, lowerBound):
-        #         vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
-        #         if self.satisfaction(vec[0],vec[1]):
-        #             camera.screen.set_at((xPix,yPix),(255,255,255))
+        pygame.surfarray.blit_array(camera.screen, pxarray) 
 
 class CoordinateGraphElement3D(Element3D, ABC):
     def __init__(self):

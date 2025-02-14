@@ -99,6 +99,7 @@ class Renderer3D(Renderer):
         cl.enqueue_copy(self.queue, self.pxarray_g, self.pxarray)
 
     def updatePixels(self):
+        # potential for conflicts due to blit overwrite
         pygame.surfarray.blit_array(self.screen, self.pxarray)         
     
     def rasterizeGPU(self, tasks: list[RenderTask]): 

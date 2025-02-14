@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # plane = Plane3D()
 
     # _3dscene = Scene3D(cube2, sphere, screen=screen, camera=camera, fps=fps)
-    # scene.render()
+    scene.render()
 
     elapsed_time = 0
     dt = 1/fps
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                 running = False
         screen.fill("black")
         # scene.physicsStep(dt)
-        scene.render()
+        # scene.render()
 
         # p.run(dt)
 
