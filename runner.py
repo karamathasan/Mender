@@ -55,11 +55,11 @@ if __name__ == "__main__":
     graph = CartesianGraph2D((5,5))
 
     graph.plotVec(np.array([-2,5]))
-    graph.plotFunction(lambda x:  np.sin(x))
+    # graph.plotFunction(lambda x:  np.sin(x))
     graph.plotSatisfaction(lambda x, y : x * x > y )
 
     scene.add(graph)
-    scene.add(text)
+    # scene.add(text)
 
 
     # print(square2.collider.getGlobalVertices())
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill("black")
+        # screen.fill("black")
         # scene.physicsStep(dt)
         # scene.render()
 

@@ -102,7 +102,8 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
     
     def draw(self, camera):
         # self.drawNaive(camera)
-        self.drawGPU("vecy - vecy == 0", camera)
+        self.drawGPU("vecy < vecx * vecx", camera)
+        pass
 
     def drawNaive(self, camera, density = 1):
         if self.cached:
@@ -166,18 +167,18 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
                 int gidx = get_global_id(0);
                 int gidy = get_global_id(1);
                          
-                int pixx = xmin + gidx;
-                int pixy = ymin + gidy;
-                int pxidx = 3 * (ymin + gidy) + graphHeight * (xmin + gidx);
+                int px = xmin + gidx;
+                int py = ymin + gidy;
+                int pxidx = 3 * ((ymin + gidy) + screenHeight * (xmin + gidx));
                 
-                int vecx = (pixx - screenWidth/2) * cameraWidth / screenWidth;
-                int vecy = (-pixy + screenHeight/2) * cameraWidth / screenWidth;
-                
-                // if ("""+ translation +"""){
+                float vecx = (px - screenWidth/2) * (float)cameraWidth / screenWidth;
+                float vecy = (-py + screenHeight/2) * (float)cameraWidth / screenWidth;
+                                
+                if ("""+ translation +"""){
                     pxarray[pxidx] = 255;
                     pxarray[pxidx+1] = 255;
                     pxarray[pxidx+2] = 255;
-                // }
+                }
             }
         """).build()
 
@@ -189,12 +190,9 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
             np.int32(camera.width),
             graphHeight,
             leftBound,
-            lowerBound
+            upperBound
         )
-
         cl.enqueue_copy(queue, pxarray, pxarray_buf) 
-        print("call")
-
         pygame.surfarray.blit_array(camera.screen, pxarray) 
 
 class CoordinateGraphElement3D(Element3D, ABC):

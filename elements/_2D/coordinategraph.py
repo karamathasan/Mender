@@ -42,7 +42,6 @@ class CartesianGraph2D(Element2D):
         # if not (start, end) in self.vectors:
             # self.vectors.append((start, end))
 
-    #TODO: create function caching/sleeping
     #if the function definition does not change with time, then cache the produced image rather than recalculate
     def plotFunction(self, function: types.FunctionType):
         # self.functions.append(function)
@@ -74,6 +73,14 @@ class CartesianGraph2D(Element2D):
             return camera.Vec2Screen(res)
         
         def drawTicks():
+            # xDir = rotmat @ np.array([1,0]) 
+            # yDir = rotmat @ np.array([0,1]) 
+
+            # right = camera.Vec2Screen(xDir * xLen)
+            # left = camera.Vec2Screen(-xDir * xLen)
+            # top = camera.Vec2Screen(yDir * yLen)
+            # bottom = camera.Vec2Screen(-yDir * yLen)
+
             for i in range(int(self.dimensions[0] * self.scale[0] + 1)):
                 upper = camera.Vec2Screen(np.array([i / self.scale[0],0.2]))
                 lower = camera.Vec2Screen(np.array([i / self.scale[0],-0.2]))
