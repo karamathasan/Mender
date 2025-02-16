@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     # Scene setup
     # 2D
-    p = Presentation()
-    scene = Scene2D(screen=screen, fps=fps)
+    # p = Presentation()
+    # scene = Scene2D(screen=screen, fps=fps)
     
     # square = Square(2,"red")
     # square2 = SquareEntity(1,"white",gravity_enabled=False)
@@ -51,14 +51,14 @@ if __name__ == "__main__":
     # circle.dynamics.set(velocity=np.array([1,0]))
 
     # circle = CircleElement(0.5)    
-    text = Text("hello", 22, Transform2D([0,7]))
-    graph = CartesianGraph2D((5,5))
+    # text = Text("hello", 22, Transform2D([0,7]))
+    # graph = CartesianGraph2D((5,5))
 
-    graph.plotVec(np.array([-2,5]))
+    # graph.plotVec(np.array([-2,5]))
     # graph.plotFunction(lambda x:  np.sin(x))
-    graph.plotSatisfaction(lambda x, y : x * x > y )
+    # graph.plotSatisfaction(lambda x, y : x * x > y )
 
-    scene.add(graph)
+    # scene.add(graph)
     # scene.add(text)
 
 
@@ -77,22 +77,22 @@ if __name__ == "__main__":
     # cube.dynamics.set(angular_velocity= 50 * np.array([1,1,1]))
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
-    # cube2 = CubeEntity(1, gravity_enabled=False)
+    cube2 = CubeEntity(1, gravity_enabled=False)
     # cube2.transform.shift(np.array([0,2,0]))
     # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 
     # sphere = Sphere3D(1)
     # sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 
-    # camera = Perspective3D(screen)
+    camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
     # camera.transform.shift(np.array([0,0,5]))
-    # camera.transform.rotate(30, np.array([0,0,1]))
+    camera.transform.rotate(-135, np.array([0,1,0]))
 
-    # plane = Plane3D()
+    plane = Plane3D()
 
-    # _3dscene = Scene3D(cube2, sphere, screen=screen, camera=camera, fps=fps)
-    scene.render()
+    _3dscene = Scene3D(cube2, screen=screen, camera=camera, fps=fps)
+    # scene.render()
 
     elapsed_time = 0
     dt = 1/fps
@@ -101,15 +101,18 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        # screen.fill("black")
+        screen.fill("black")
+        
         # scene.physicsStep(dt)
         # scene.render()
 
         # p.run(dt)
 
-        # _3dscene.render()
-        # _3dscene.physicsStep(dt)
-        # cube.transform.rotate(0.5, np.array([0,1,0]))
+        _3dscene.render()
+        _3dscene.physicsStep(dt)
+        # camera.transform.rotate(-1, np.array([0,1,0]))
+        # print(camera.getGlobalDirection())
+        # cube2.transform.rotate(0.5, np.array([0,1,1]))
 
         # square.collider.checkCollision(square2.collider)
         # if square.collider.checkCollision(square2.collider):

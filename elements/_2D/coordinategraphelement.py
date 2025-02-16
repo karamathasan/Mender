@@ -195,6 +195,12 @@ class SatisfactionGraph2D(CoordinateGraphElement2D):
         cl.enqueue_copy(queue, pxarray, pxarray_buf) 
         pygame.surfarray.blit_array(camera.screen, pxarray) 
 
+class FieldGraph2D(Element2D, ABC):
+    pass
+
+class VectorFieldGraph2D(Element2D, ABC):
+    pass
+
 class CoordinateGraphElement3D(Element3D, ABC):
     def __init__(self):
         pass

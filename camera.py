@@ -80,7 +80,7 @@ class Camera3D(Camera):
         self.far_clip = far_clip
 
         self.direction = np.array([0,0,-1],dtype=np.float64)
-        # self.painter = Painter3D(self.screen)
+        self.painter = Painter3D(self.screen)
         self.renderer = Renderer3D(self.screen)
 
     def Vec2Screen(self, vec: np.ndarray):
@@ -101,7 +101,15 @@ class Camera3D(Camera):
         direction = (self.transform.orientation * Quaternion.Vec2Quaternion(self.direction) * self.transform.orientation.conjugate()).toVec()
         return direction / np.linalg.norm(direction)
     
-    def render(self, elements):
+    def paint(self, elements):
+        for element in elements:
+            # for task in element.draw(self):
+            task = element.draw(self)
+            self.painter.addTask(task)
+        self.painter.drawFaces()
+        # self.painter
+
+    def render(self, elements):    
         # self.renderer.clearPixels()
         tasks = []
         for element in elements:
@@ -110,8 +118,9 @@ class Camera3D(Camera):
                     tasks.append(task)
         self.renderer.clear()
 
-        self.renderer.rasterizeGPU(tasks)
-        self.renderer.updatePixels()
+        # self.renderer.rasterizeGPU(tasks)
+        self.renderer.rasterizeCPU(tasks)
+        # self.renderer.updatePixels()
 
     def getDepth(self, vec):
         v = vec - self.transform.position

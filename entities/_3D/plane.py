@@ -28,9 +28,3 @@ class Plane3D(Entity3D):
         tasks.append(self.face[0].draw(camera))
         tasks.append(self.face[1].draw(camera))
         return tasks
-    
-        # very laggy
-        # for i in range(self.size):
-        #     for j in range(self.size):
-        #         if camera.Vec2Screen(self.transform.position + np.array([10 * (i - self.size/2), 0, 10 * (j - self.size/2)])) is not None:
-        #             pygame.draw.circle(camera.screen, self.color, camera.Vec2Screen(self.transform.position + np.array([10 * (i - self.size/2), 0, 10 * (j - self.size/2)])), 1)
