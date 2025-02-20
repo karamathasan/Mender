@@ -69,10 +69,12 @@ class Camera2D(Camera):
         return int(length * self.screen.get_size()[0] / self.width)
 
 class Camera3D(Camera):
-    def __init__(self, screen: pygame.Surface, width: float, aspect_ratio: float = 16/9 ,transform: Transform3D = None, near_clip:float = 0.1, far_clip:float = 100):
+    def __init__(self, screen: pygame.Surface, width: float, aspect_ratio: float = 16/9 ,transform: Transform3D = None, near_clip:float = 0.1, far_clip:float = 100, focal_dist:float = 5):
         super().__init__(screen,width,aspect_ratio)
+        self.focal_dist = focal_dist
+
         if transform is None:
-            self.transform = Transform3D([0,0,5])
+            self.transform = Transform3D([0,0,self.focal_dist])
         else:
             self.transform = transform
 
@@ -88,7 +90,7 @@ class Camera3D(Camera):
         v = vec - self.transform.position
         u = self.direction
         v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
-        if np.dot(v,u) <= 0:
+        if np.dot(v,u) <= 0:            
             return
         v = v - u * np.dot(u,v) / np.dot(u,u)
 
@@ -103,9 +105,8 @@ class Camera3D(Camera):
     
     def paint(self, elements):
         for element in elements:
-            # for task in element.draw(self):
-            task = element.draw(self)
-            self.painter.addTask(task)
+            tasks = element.draw(self)
+            self.painter.addTasks(tasks)
         self.painter.drawFaces()
         # self.painter
 
@@ -141,18 +142,18 @@ class Perspective3D(Camera3D):
         u = self.direction
         v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
 
-        # depth = v[2]
-        # if not (self.near_clip < np.linalg.norm(u * np.dot(u,v) / np.dot(u,u)) < self.far_clip):
-        # if not (self.near_clip < -depth < self.far_clip):
-            # return
-        # if (np.dot(u,v/np.linalg.norm(v)) < np.cos(self.fov/2) ):
-        #     return 
-       
+        if not (self.focal_dist + self.near_clip < np.linalg.norm(v) < self.focal_dist + self.far_clip):
+            return
+        
         v = self.near_clip * (v / np.dot(u,v)) - u * self.near_clip
 
         size = self.screen.get_size()
         pygX = size[0]/2 + self.toScreenSpace(v[0])
         pygY = size[1]/2 - self.toScreenSpace(v[1]) # TODO: should account for aspect ratio
+        if not (0 <= pygX < size[0]):
+            return 
+        if not (0 <= pygY < size[1]):
+            return 
         return pygame.Vector2(pygX,pygY)
 
 class Orthographic3D(Camera3D):

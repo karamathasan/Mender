@@ -146,6 +146,7 @@ class Renderer3D(Renderer):
                 if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
                     self.zbuffer[xmin + x, ymin + y] = pointDepth
                     self.pxarray[xmin + x, ymin + y] = task.color
+                    # self.pxarray[xmin + x, ymin + y] = [255,255,255]
 
     def inTriangle(self, coordinate:tuple, task:RenderTask):
         px,py = coordinate
@@ -234,7 +235,7 @@ class Painter3D(Renderer):
         self.screen = screen
         heapq.heapify(self.faceheap)
 
-    def addTask(self, renderTasks:list[RenderTask]):
+    def addTasks(self, renderTasks:list[RenderTask]):
         if renderTasks:
             for task in renderTasks:
                 if task:

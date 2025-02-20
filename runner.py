@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
     cube2 = CubeEntity(1, gravity_enabled=False)
-    # cube2.transform.shift(np.array([0,2,0]))
+    cube2.transform.shift(np.array([0,0,-5]))
     # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 
     # sphere = Sphere3D(1)
@@ -87,9 +87,9 @@ if __name__ == "__main__":
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
     # camera.transform.shift(np.array([0,0,5]))
-    camera.transform.rotate(-135, np.array([0,1,0]))
+    # camera.transform.rotate(-220, np.array([0,1,0]))
 
-    plane = Plane3D()
+    # plane = Plane3D()
 
     _3dscene = Scene3D(cube2, screen=screen, camera=camera, fps=fps)
     # scene.render()
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
         _3dscene.render()
         _3dscene.physicsStep(dt)
-        # camera.transform.rotate(-1, np.array([0,1,0]))
+        camera.transform.rotate(-1, np.array([0,1,0]))
         # print(camera.getGlobalDirection())
         # cube2.transform.rotate(0.5, np.array([0,1,1]))
 

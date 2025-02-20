@@ -40,7 +40,6 @@ class Triangle(Face):
         global_b = self.parent.position + (self.parent.orientation * Quaternion.Vec2Quaternion(self.b) * self.parent.orientation.conjugate()).toVec()
         global_c = self.parent.position + (self.parent.orientation * Quaternion.Vec2Quaternion(self.c) * self.parent.orientation.conjugate()).toVec()
 
-        # depth = camera.getDepth((global_a + global_b + global_c)/3)
         depth_a = camera.getDepth(global_a)
         depth_b = camera.getDepth(global_b)
         depth_c = camera.getDepth(global_c)
@@ -50,16 +49,20 @@ class Triangle(Face):
 
         basecolor = np.array([255,255,255])
         normGlobal = (self.parent.orientation * Quaternion.Vec2Quaternion(self.normal) * self.parent.orientation.conjugate()).toVec()
-        #diffuse lighting
+        
+        # basic diffuse lighting -- does not consider actual light sources
         diff = max(np.dot(camera.getGlobalDirection(),normGlobal), 0)
         color = np.array(basecolor * diff, dtype=int)
         r,g,b = color
-        return RenderTask(
-            (screen_a, screen_b, screen_c),
-            (depth_a, depth_b, depth_c),
-            (r,g,b),
-            normGlobal
-        )
+
+        # Only return valid render tasks
+        if screen_a and screen_b and screen_c:
+            return RenderTask(
+                (screen_a, screen_b, screen_c),
+                (depth_a, depth_b, depth_c),
+                (r,g,b),
+                normGlobal
+            )
 
     @staticmethod
     def fromQuad(*points: np.ndarray, parent: Transform3D = None):

@@ -25,3 +25,6 @@ class RenderTask():
     
     def toTuple(self):
         return (self.points, self.depths, self.color)
+    
+    def __str__(self):
+        return f"RenderTask:\n      points: ({self.points}),\n      depths:   ({self.depths})"
