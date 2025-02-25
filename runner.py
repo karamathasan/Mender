@@ -87,7 +87,7 @@ if __name__ == "__main__":
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
     # camera.transform.shift(np.array([0,0,5]))
-    # camera.transform.rotate(-220, np.array([0,1,0]))
+    # camera.transform.rotate(-10, np.array([0,0,1]))
 
     # plane = Plane3D()
 

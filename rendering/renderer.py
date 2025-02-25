@@ -246,4 +246,139 @@ class Painter3D(Renderer):
             task = heapq.heappop(self.faceheap)
             a,b,c = task.points
             pygame.draw.polygon(self.screen, color=task.color, points=[a,b,c])
+
+class DoubleBufferRenderer3D(Renderer3D):
+    def __init__(self, screen):
+        self.screen = screen
+        self.zbuffer_fronthost = np.full(self.screen.get_size(),np.finfo(np.float32).max) # not transposed on purpose
+        self.zbuffer_backhost = np.full(self.screen.get_size(),np.finfo(np.float32).max) # not transposed on purpose
+        
+        self.pxarray_fronthost = pygame.surfarray.array3d(screen) # indexed in the same way the zbuffer is
+        self.pxarray_fronthost = np.array(self.pxarray, np.int32(0))
+        
+        self.pxarray_backhost = pygame.surfarray.array3d(screen) # indexed in the same way the zbuffer is
+        self.pxarray_backhost = np.array(self.pxarray, np.int32(0))
+
+        platform = cl.get_platforms()[0]
+        device = platform.get_devices()[0]
+
+        self.ctx = cl.Context([device])
+        self.queue = cl.CommandQueue(self.ctx)
+
+        mf = cl.mem_flags
+        self.zbuffer_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
+        self.zbuffer_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
+        self.pxarray_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        self.pxarray_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        self.prg = cl.Program(self.ctx, """
+        __kernel void rasterize(
+                __global float *zbuffer_g,
+                __global int *pxarray_g, 
+                __global int *a_g,
+                __global int *b_g,
+                __global int *c_g,
+                __global const float *depths,
+                int r, int g, int b,
+                int xmin,
+                int ymin,
+                int height,
+                int width,
+                int maxDepth)
+            {
+                int gidx = get_global_id(0);
+                int gidy = get_global_id(1);
+                int depthidx = (ymin + gidy) + height * (xmin + gidx);
+                int pxidx = 3*depthidx;
+                            
+                float depth_a = depths[0];
+                float depth_b = depths[1];
+                float depth_c = depths[2];
+                int det = ((b_g[0]-a_g[0]) * (c_g[1]-a_g[1]) - (c_g[0]-a_g[0]) * (b_g[1]-a_g[1]));
+                float w1 = 0.0;
+                float w2 = 0.0;
+                
+                int px = (xmin + gidx - a_g[0]);
+                int py = ymin + gidy - a_g[1];
+                        
+                float pointDepth = maxDepth;
+                if (det != 0)
+                {
+                    w1 = (float)(px * (c_g[1]-a_g[1]) - py * (c_g[0]-a_g[0]))/det;
+                    w2 = (float)(-px * (b_g[1]-a_g[1]) + py * (b_g[0]-a_g[0]))/det;
+                }
+                else {return;}
+                
+                if (w1 + w2 > 1.0 || w1 < 0. || w2 < 0.)
+                {
+                    return;
+                }          
+                pointDepth = depth_a + w1*(depth_b - depth_a) + w2*(depth_c - depth_a);        
+                            
+                if (pointDepth < zbuffer_g[depthidx])
+                {
+                    if (pxidx < height * width * 3)
+                    {
+                        zbuffer_g[depthidx] = pointDepth;
+                        pxarray_g[pxidx] = r;
+                        pxarray_g[pxidx + 1] = g;
+                        pxarray_g[pxidx + 2] = b;
+                    }
+                }
+            } 
+        """ ).build()
+
+    def rasterizeGPU(self, tasks: list[RenderTask]): 
+        for task in tasks:
+            xmax, ymax, xmin, ymin = self.bound(task.points)
+            points, depths, color = task.toTuple()
+            width = xmax - xmin + 1
+            height = ymax - ymin + 1
+
+            r,g,b = color
+
+            r = np.int32(r)
+            g = np.int32(g)
+            b = np.int32(b) 
+
+            mf = cl.mem_flags
+            a_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y], dtype=np.int32))
+            b_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y], dtype=np.int32))
+            c_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
+            depths_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
+            knl = self.prg.rasterize  
+            knl(self.queue, (width, height), None, 
+                self.zbuffer_frontbuf,
+                self.pxarray_frontbuf,
+                a_g, 
+                b_g, 
+                c_g, 
+                depths_g, 
+                r,g,b, 
+                np.int32(xmin), 
+                np.int32(ymin), 
+                np.int32(self.pxarray_frontbuf.shape[1]),
+                np.int32(self.pxarray_frontbuf.shape[0]),
+                np.finfo(np.float32).max 
+            )
+        cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray_frontbuf, wait_for=False)
+        cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer_frontbuf, wait_for=False)
+
+        self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
+        self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
+
+        self.zbuffer_fronthost, self.zbuffer_backhost = self.zbuffer_backhost, self.zbuffer_fronthost
+        self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
+
+    def clear(self):
+        self.zbuffer.fill(np.finfo(np.float32).max) 
+        self.pxarray.fill(0)
+
+        cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer)
+        cl.enqueue_copy(self.queue, self.zbuffer_backbuf, self.zbuffer)
+        cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray)
+        cl.enqueue_copy(self.queue, self.pxarray_backbuf, self.pxarray)
+
+    def mergeBuffers(self):
+        self.pxarray = np.minimum(self.pxarray_fronthost,self.pxarray_backhost)
+        
              

@@ -111,7 +111,7 @@ class Camera3D(Camera):
         # self.painter
 
     def render(self, elements):    
-        # self.renderer.clearPixels()
+        self.renderer.clearPixels()
         tasks = []
         for element in elements:
             for task in element.draw(self):
@@ -119,9 +119,9 @@ class Camera3D(Camera):
                     tasks.append(task)
         self.renderer.clear()
 
-        # self.renderer.rasterizeGPU(tasks)
-        self.renderer.rasterizeCPU(tasks)
-        # self.renderer.updatePixels()
+        # self.renderer.rasterizeCPU(tasks)
+        self.renderer.rasterizeGPU(tasks)
+        self.renderer.updatePixels()
 
     def getDepth(self, vec):
         v = vec - self.transform.position
