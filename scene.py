@@ -74,8 +74,8 @@ class Scene3D(Scene):
         self.elements.extend(args)
 
     def render(self):
-        # self.camera.render(self.elements)
-        self.camera.paint(self.elements)
+        self.camera.render(self.elements)
+        # self.camera.paint(self.elements)
         # pass
 
     def physicsStep(self, dt):

@@ -78,11 +78,12 @@ if __name__ == "__main__":
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
     cube2 = CubeEntity(1, gravity_enabled=False)
-    cube2.transform.shift(np.array([0,0,-5]))
-    # cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
+    cube2.transform.shift(np.array([0,2,-1]))
+    cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 
-    # sphere = Sphere3D(1)
-    # sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
+    sphere = Sphere3D(1)
+    sphere.transform.shift(np.array([0,0,-3]))
+    sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
 
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)
@@ -91,7 +92,7 @@ if __name__ == "__main__":
 
     # plane = Plane3D()
 
-    _3dscene = Scene3D(cube2, screen=screen, camera=camera, fps=fps)
+    _3dscene = Scene3D(sphere, cube2, screen=screen, camera=camera, fps=fps)
     # scene.render()
 
     elapsed_time = 0
@@ -110,7 +111,7 @@ if __name__ == "__main__":
 
         _3dscene.render()
         _3dscene.physicsStep(dt)
-        camera.transform.rotate(-1, np.array([0,1,0]))
+        # camera.transform.rotate(-1, np.array([0,1,0]))
         # print(camera.getGlobalDirection())
         # cube2.transform.rotate(0.5, np.array([0,1,1]))
 
@@ -123,7 +124,7 @@ if __name__ == "__main__":
         dt = clock.tick(fps)/1000
 
         elapsed_time += dt
-        # print(f"true fps: {1/dt}")
+        print(f"true fps: {1/dt}")
 
     pygame.quit()
 

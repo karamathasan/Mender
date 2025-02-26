@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 from physics.transform import Transform2D, Transform3D
 from rendering.quaternion import Quaternion
-from rendering.renderer import Painter3D, Renderer3D
+from rendering.renderer import Painter3D, Renderer3D, DoubleBufferRenderer3D
 from abc import ABC
 
 import time
@@ -83,7 +83,8 @@ class Camera3D(Camera):
 
         self.direction = np.array([0,0,-1],dtype=np.float64)
         self.painter = Painter3D(self.screen)
-        self.renderer = Renderer3D(self.screen)
+        # self.renderer = Renderer3D(self.screen)
+        self.renderer = DoubleBufferRenderer3D(self.screen)
 
     def Vec2Screen(self, vec: np.ndarray):
         assert vec.shape == (3,)
@@ -108,10 +109,9 @@ class Camera3D(Camera):
             tasks = element.draw(self)
             self.painter.addTasks(tasks)
         self.painter.drawFaces()
-        # self.painter
 
     def render(self, elements):    
-        self.renderer.clearPixels()
+        # self.renderer.clear()
         tasks = []
         for element in elements:
             for task in element.draw(self):

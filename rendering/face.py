@@ -71,19 +71,3 @@ class Triangle(Face):
         a,b,c,d = points
         return Triangle(a,b,c, parent=parent), Triangle(c,d,a, parent=parent)
     
-# class Quad(Face):
-#     def __init__(self, *points, color = "white", parent = None):
-#         a,b,c,d = points
-#         self.triangles = (Triangle(a,b,c),Triangle(c,d,a))
-
-# def draw(self, camera: Camera3D):
-#         # needs to account for rotations. 
-#         a = camera.Vec2Screen(self.a)
-#         b = camera.Vec2Screen(self.b)
-#         c = camera.Vec2Screen(self.c)
-        
-#         color = np.dot(camera.getGlobalDirection(),self.normal)
-
-#         pygame.draw.polygon(surface=camera.screen, color="white", points=[a, b, c])
-
-#     @staticmethod

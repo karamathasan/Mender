@@ -138,15 +138,16 @@ class Renderer3D(Renderer):
         cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g)
         cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g)
 
-    def rasterizeCPU(self, task: RenderTask):
-        xmax, ymax, xmin, ymin = self.bound(task.points)
-        for x in range(xmax-xmin+1):
-            for y in range(ymax-ymin+1):
-                pointDepth = self.inTriangle((xmin + x,ymin + y),task)
-                if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
-                    self.zbuffer[xmin + x, ymin + y] = pointDepth
-                    self.pxarray[xmin + x, ymin + y] = task.color
-                    # self.pxarray[xmin + x, ymin + y] = [255,255,255]
+    def rasterizeCPU(self, tasks: list[RenderTask]):
+        for task in tasks:
+            xmax, ymax, xmin, ymin = self.bound(task.points)
+            for x in range(xmax-xmin+1):
+                for y in range(ymax-ymin+1):
+                    pointDepth = self.inTriangle((xmin + x,ymin + y),task)
+                    if pointDepth < self.zbuffer[xmin + x,ymin + y] and pointDepth != np.finfo(np.float32).max:
+                        self.zbuffer[xmin + x, ymin + y] = pointDepth
+                        self.pxarray[xmin + x, ymin + y] = task.color
+                        # self.pxarray[xmin + x, ymin + y] = [255,255,255]
 
     def inTriangle(self, coordinate:tuple, task:RenderTask):
         px,py = coordinate
@@ -254,10 +255,10 @@ class DoubleBufferRenderer3D(Renderer3D):
         self.zbuffer_backhost = np.full(self.screen.get_size(),np.finfo(np.float32).max) # not transposed on purpose
         
         self.pxarray_fronthost = pygame.surfarray.array3d(screen) # indexed in the same way the zbuffer is
-        self.pxarray_fronthost = np.array(self.pxarray, np.int32(0))
+        self.pxarray_fronthost = np.array(self.pxarray_fronthost, np.int32(0))
         
         self.pxarray_backhost = pygame.surfarray.array3d(screen) # indexed in the same way the zbuffer is
-        self.pxarray_backhost = np.array(self.pxarray, np.int32(0))
+        self.pxarray_backhost = np.array(self.pxarray_backhost, np.int32(0))
 
         platform = cl.get_platforms()[0]
         device = platform.get_devices()[0]
@@ -266,10 +267,10 @@ class DoubleBufferRenderer3D(Renderer3D):
         self.queue = cl.CommandQueue(self.ctx)
 
         mf = cl.mem_flags
-        self.zbuffer_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
-        self.zbuffer_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
-        self.pxarray_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
-        self.pxarray_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        self.zbuffer_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer_fronthost)
+        self.zbuffer_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer_backhost)
+        self.pxarray_frontbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray_fronthost)
+        self.pxarray_backbuf = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray_backhost)
         self.prg = cl.Program(self.ctx, """
         __kernel void rasterize(
                 __global float *zbuffer_g,
@@ -356,12 +357,12 @@ class DoubleBufferRenderer3D(Renderer3D):
                 r,g,b, 
                 np.int32(xmin), 
                 np.int32(ymin), 
-                np.int32(self.pxarray_frontbuf.shape[1]),
-                np.int32(self.pxarray_frontbuf.shape[0]),
+                np.int32(self.pxarray_fronthost.shape[1]),
+                np.int32(self.pxarray_fronthost.shape[0]),
                 np.finfo(np.float32).max 
             )
-        cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray_frontbuf, wait_for=False)
-        cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer_frontbuf, wait_for=False)
+        cl.enqueue_copy(self.queue, self.pxarray_fronthost, self.pxarray_frontbuf, is_blocking = False)
+        cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf, is_blocking = False)
 
         self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
         self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
@@ -370,15 +371,19 @@ class DoubleBufferRenderer3D(Renderer3D):
         self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
 
     def clear(self):
-        self.zbuffer.fill(np.finfo(np.float32).max) 
-        self.pxarray.fill(0)
+        # self.zbuffer.fill(np.finfo(np.float32).max) 
+        # self.pxarray.fill(0)
+        self.zbuffer_fronthost.fill(np.finfo(np.float32).max) 
+        self.zbuffer_backhost.fill(np.finfo(np.float32).max) 
+        self.pxarray_fronthost.fill(0)
+        self.pxarray_backhost.fill(0)
 
-        cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer)
-        cl.enqueue_copy(self.queue, self.zbuffer_backbuf, self.zbuffer)
-        cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray)
-        cl.enqueue_copy(self.queue, self.pxarray_backbuf, self.pxarray)
-
-    def mergeBuffers(self):
-        self.pxarray = np.minimum(self.pxarray_fronthost,self.pxarray_backhost)
-        
+        cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer_fronthost, is_blocking = False)
+        cl.enqueue_copy(self.queue, self.zbuffer_backbuf, self.zbuffer_backhost, is_blocking = False)
+        cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray_fronthost, is_blocking = False)
+        cl.enqueue_copy(self.queue, self.pxarray_backbuf, self.pxarray_backhost, is_blocking = False)
+    
+    def updatePixels(self):
+        # self.mergeBuffers()
+        pygame.surfarray.blit_array(self.screen, self.pxarray_fronthost)         
              
