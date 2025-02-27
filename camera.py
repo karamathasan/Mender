@@ -111,11 +111,11 @@ class Camera3D(Camera):
         self.painter.drawFaces()
 
     def render(self, elements):    
-        # self.renderer.clear()
         tasks = []
         for element in elements:
             for task in element.draw(self):
                 if np.dot(task.normal, self.getGlobalDirection()) > 0:
+                    #backface culling
                     tasks.append(task)
         self.renderer.clear()
 

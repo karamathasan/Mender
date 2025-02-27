@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # plane = Plane3D()
 
-    _3dscene = Scene3D(sphere, cube2, screen=screen, camera=camera, fps=fps)
+    _3dscene = Scene3D(sphere, screen=screen, camera=camera, fps=fps)
     # scene.render()
 
     elapsed_time = 0

@@ -103,7 +103,11 @@ class Renderer3D(Renderer):
         pygame.surfarray.blit_array(self.screen, self.pxarray)         
     
     def rasterizeGPU(self, tasks: list[RenderTask]): 
+        nonknl = 0
+        inknl = 0
+        start = time.time()
         for task in tasks:
+            loopstart = time.time()
             xmax, ymax, xmin, ymin = self.bound(task.points)
             points, depths, color = task.toTuple()
             width = xmax - xmin + 1
@@ -121,6 +125,7 @@ class Renderer3D(Renderer):
             c_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
             depths_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
             knl = self.prg.rasterize  
+            knlstart = time.time()
             knl(self.queue, (width, height), None, 
                 self.zbuffer_g,
                 self.pxarray_g,
@@ -135,8 +140,19 @@ class Renderer3D(Renderer):
                 np.int32(self.pxarray.shape[0]),
                 np.finfo(np.float32).max 
             )
-        cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g)
-        cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g)
+
+            loopend = time.time()
+            nonknl += knlstart - loopstart
+            inknl += loopend - knlstart
+        startcopy = time.time()
+        cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g, is_blocking=False)
+        cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g, is_blocking=False)
+        end = time.time()
+        # print(f"time spent in knl: {inknl}")
+        # print(f"time spent out knl: {nonknl}")
+        print(f"time spent on copy: {end - startcopy}")
+        # print(f"sum {inknl + nonknl + end - startcopy}")
+        print(f"    total time: {end - start}\n")
 
     def rasterizeCPU(self, tasks: list[RenderTask]):
         for task in tasks:
@@ -361,29 +377,34 @@ class DoubleBufferRenderer3D(Renderer3D):
                 np.int32(self.pxarray_fronthost.shape[0]),
                 np.finfo(np.float32).max 
             )
+            self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
+            self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
+
+
+        frameEnd = time.time()
         cl.enqueue_copy(self.queue, self.pxarray_fronthost, self.pxarray_frontbuf, is_blocking = False)
+        cl.enqueue_copy(self.queue, self.pxarray_backhost, self.pxarray_backbuf, is_blocking = False)
         cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf, is_blocking = False)
 
-        self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
-        self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
+        # self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
+        # self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
 
-        self.zbuffer_fronthost, self.zbuffer_backhost = self.zbuffer_backhost, self.zbuffer_fronthost
-        self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
+        # self.zbuffer_fronthost, self.zbuffer_backhost = self.zbuffer_backhost, self.zbuffer_fronthost
+        # self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
+        end = time.time()
+        # print(end - start)
 
     def clear(self):
-        # self.zbuffer.fill(np.finfo(np.float32).max) 
-        # self.pxarray.fill(0)
         self.zbuffer_fronthost.fill(np.finfo(np.float32).max) 
-        self.zbuffer_backhost.fill(np.finfo(np.float32).max) 
         self.pxarray_fronthost.fill(0)
-        self.pxarray_backhost.fill(0)
 
         cl.enqueue_copy(self.queue, self.zbuffer_frontbuf, self.zbuffer_fronthost, is_blocking = False)
-        cl.enqueue_copy(self.queue, self.zbuffer_backbuf, self.zbuffer_backhost, is_blocking = False)
         cl.enqueue_copy(self.queue, self.pxarray_frontbuf, self.pxarray_fronthost, is_blocking = False)
-        cl.enqueue_copy(self.queue, self.pxarray_backbuf, self.pxarray_backhost, is_blocking = False)
     
+    def mergeBuffers(self):
+        self.pxarray_fronthost = np.minimum(self.pxarray_fronthost, self.pxarray_backhost)
+
     def updatePixels(self):
-        # self.mergeBuffers()
+        self.mergeBuffers()
         pygame.surfarray.blit_array(self.screen, self.pxarray_fronthost)         
              
