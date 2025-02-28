@@ -83,8 +83,8 @@ class Camera3D(Camera):
 
         self.direction = np.array([0,0,-1],dtype=np.float64)
         self.painter = Painter3D(self.screen)
-        # self.renderer = Renderer3D(self.screen)
-        self.renderer = DoubleBufferRenderer3D(self.screen)
+        self.renderer = Renderer3D(self.screen)
+        self.doubleRenderer = DoubleBufferRenderer3D(self.screen)
 
     def Vec2Screen(self, vec: np.ndarray):
         assert vec.shape == (3,)
@@ -122,6 +122,19 @@ class Camera3D(Camera):
         # self.renderer.rasterizeCPU(tasks)
         self.renderer.rasterizeGPU(tasks)
         self.renderer.updatePixels()
+
+    def doubleRender(self, elements):    
+        self.doubleRenderer.clear()
+        for element in elements:
+            for task in element.draw(self):
+                if np.dot(task.normal, self.getGlobalDirection()) > 0:
+                    #backface culling
+                    # tasks.append(task)
+                    self.doubleRenderer.rasterizeGPUseq(task)
+
+        # self.doubleRenderer.rasterizeCPU(tasks)
+        self.doubleRenderer.copyBuffers()
+        self.doubleRenderer.updatePixels()
 
     def getDepth(self, vec):
         v = vec - self.transform.position

@@ -1,3 +1,4 @@
+import pyopencl as cl
 import numpy as np
 import pygame
 from abc import ABC
@@ -11,6 +12,7 @@ class RenderTask():
         self.color = color
 
         self.normal = normal
+
         
     def avgDepth(self):
         sum = 0
@@ -18,6 +20,11 @@ class RenderTask():
             sum += depth
         return sum/3 
     
+    # def getBuffers(self):
+        """
+        creates memory buffers for each value being read to the gpu
+        """
+
 
     def __lt__(self, other):
         # for max heap implementation

@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     sphere = Sphere3D(1)
     sphere.transform.shift(np.array([0,0,-3]))
-    sphere.dynamics.set(angular_velocity=50 * np.array([0,2,1]))
+    sphere.dynamics.set(angular_velocity=50 * np.array([0,1,0]))
 
     camera = Perspective3D(screen)
     # camera = Orthographic3D(screen)

@@ -126,7 +126,7 @@ class Renderer3D(Renderer):
             depths_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
             knl = self.prg.rasterize  
             knlstart = time.time()
-            knl(self.queue, (width, height), None, 
+            event = knl(self.queue, (width, height), None, 
                 self.zbuffer_g,
                 self.pxarray_g,
                 a_g, 
@@ -140,17 +140,17 @@ class Renderer3D(Renderer):
                 np.int32(self.pxarray.shape[0]),
                 np.finfo(np.float32).max 
             )
-
+            event.wait()
             loopend = time.time()
             nonknl += knlstart - loopstart
             inknl += loopend - knlstart
         startcopy = time.time()
         cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g, is_blocking=False)
-        cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g, is_blocking=False)
+        # cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g, is_blocking=False)
         end = time.time()
-        # print(f"time spent in knl: {inknl}")
-        # print(f"time spent out knl: {nonknl}")
-        print(f"time spent on copy: {end - startcopy}")
+        print(f"time spent in knl: {inknl}")
+        print(f"time spent out knl: {nonknl}")
+        # print(f"time spent on copy: {end - startcopy}")
         # print(f"sum {inknl + nonknl + end - startcopy}")
         print(f"    total time: {end - start}\n")
 
@@ -384,7 +384,8 @@ class DoubleBufferRenderer3D(Renderer3D):
         frameEnd = time.time()
         cl.enqueue_copy(self.queue, self.pxarray_fronthost, self.pxarray_frontbuf, is_blocking = False)
         cl.enqueue_copy(self.queue, self.pxarray_backhost, self.pxarray_backbuf, is_blocking = False)
-        cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf, is_blocking = False)
+        # cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf, is_blocking = False)
+        # cl.enqueue_copy(self.queue, self.zbuffer_backhost, self.zbuffer_backbuf, is_blocking = False)
 
         # self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
         # self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
@@ -393,6 +394,48 @@ class DoubleBufferRenderer3D(Renderer3D):
         # self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
         end = time.time()
         # print(end - start)
+
+    def rasterizeGPUseq(self, task):
+        xmax, ymax, xmin, ymin = self.bound(task.points)
+        points, depths, color = task.toTuple()
+        width = xmax - xmin + 1
+        height = ymax - ymin + 1
+
+        r,g,b = color
+
+        r = np.int32(r)
+        g = np.int32(g)
+        b = np.int32(b) 
+
+        mf = cl.mem_flags
+        a_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[0].x, points[0].y], dtype=np.int32))
+        b_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[1].x, points[1].y], dtype=np.int32))
+        c_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array([points[2].x, points[2].y], dtype=np.int32))
+        depths_g = cl.Buffer(self.ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=np.array(depths, dtype=np.float32))
+        knl = self.prg.rasterize  
+        knl(self.queue, (width, height), None, 
+            self.zbuffer_frontbuf,
+            self.pxarray_frontbuf,
+            a_g, 
+            b_g, 
+            c_g, 
+            depths_g, 
+            r,g,b, 
+            np.int32(xmin), 
+            np.int32(ymin), 
+            np.int32(self.pxarray_fronthost.shape[1]),
+            np.int32(self.pxarray_fronthost.shape[0]),
+            np.finfo(np.float32).max 
+        )
+        self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
+        self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
+
+    def copyBuffers(self):
+        e1 = cl.enqueue_copy(self.queue, self.pxarray_fronthost, self.pxarray_frontbuf)
+        e2 = cl.enqueue_copy(self.queue, self.pxarray_backhost, self.pxarray_backbuf)
+        # e3 = cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf)
+        # e4 = cl.enqueue_copy(self.queue, self.zbuffer_backhost, self.zbuffer_backbuf)
+        # cl.wait_for_events([e1,e2,e3])
 
     def clear(self):
         self.zbuffer_fronthost.fill(np.finfo(np.float32).max) 
