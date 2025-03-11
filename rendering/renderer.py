@@ -448,6 +448,7 @@ class DoubleBufferRenderer3D(Renderer3D):
         self.pxarray_fronthost = np.minimum(self.pxarray_fronthost, self.pxarray_backhost)
 
     def updatePixels(self):
-        self.mergeBuffers()
-        pygame.surfarray.blit_array(self.screen, self.pxarray_fronthost)         
+        # self.mergeBuffers()
+        # pygame.surfarray.blit_array(self.screen, self.pxarray_fronthost)         
+        pygame.surfarray.blit_array(self.screen, self.pxarray_backhost)         
              

@@ -124,7 +124,6 @@ class Camera3D(Camera):
         self.renderer.updatePixels()
 
     def doubleRender(self, elements):    
-        self.doubleRenderer.clear()
         for element in elements:
             for task in element.draw(self):
                 if np.dot(task.normal, self.getGlobalDirection()) > 0:
@@ -135,6 +134,7 @@ class Camera3D(Camera):
         # self.doubleRenderer.rasterizeCPU(tasks)
         self.doubleRenderer.copyBuffers()
         self.doubleRenderer.updatePixels()
+        self.doubleRenderer.clear()
 
     def getDepth(self, vec):
         v = vec - self.transform.position

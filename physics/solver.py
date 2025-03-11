@@ -93,3 +93,12 @@ class ExplicitEuclid3D(Solver):
         if np.linalg.norm(angv) > np.finfo(float).eps:
             transform.rotate(np.linalg.norm(angv) * dt, angv/np.linalg.norm(angv))
         # transform.rotate(0.1,np.array([1,0,0]))
+
+class VerletSolver(Solver):
+    pass
+
+class RKSolver(Solver):
+    pass
+
+class RK4Solver(RKSolver):
+    pass

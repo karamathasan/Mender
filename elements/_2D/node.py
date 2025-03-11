@@ -20,6 +20,12 @@ class Node(Element2D):
 
         # draw connection to children
         # for connection in connection:
+
+    def connect(self, other):
+        pass
+
+    def disconnect(self, other):
+        pass
             
 
         
