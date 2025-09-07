@@ -147,7 +147,8 @@ class Collider2D(Collider):
         return sum/len(self.vertices)
     
 class CircleCollider(Collider2D):
-    pass
+    def __init__(self):
+        pass
 
 class Collider3D(Collider):
     def __init__(self, parent, vertices: np.ndarray):
