@@ -20,7 +20,7 @@ class CartesianGraph2D(Element2D):
         self.plots = []
         self.vectors = []
         self.functions = []
-        self.satisfactions = []
+        self.relations = []
 
         if transform:
             self.transform = transform
@@ -42,13 +42,13 @@ class CartesianGraph2D(Element2D):
     def plotFunction(self, function: types.FunctionType):
         self.functions.append(function)
 
-    def plotSatisfaction(self, satisfaction):
+    def plotRelation(self, relation):
         """
         Include points (x,y) that satisfy the function passed
         Parameters:
-            satisfaction: lambda x,y -> bool
+            relation: lambda x,y -> bool
         """
-        self.satisfactions.append(satisfaction)
+        self.relations.append(relation)
 
     def drawFunctions(self, camera):
         for function in self.functions:
@@ -95,8 +95,8 @@ class CartesianGraph2D(Element2D):
         # "2 * x", "2 ** x", "x * x + 2 * x + 2"
         pass
 
-    def drawSatisfactions(self, camera, density = 1):
-        for satisfaction in self.satisfactions:
+    def drawRelations(self, camera, density = 1):
+        for relation in self.relations:
             leftBound = int(camera.Vec2Screen(np.array([-self.dimensions[0],0]) + self.transform.position).x)
             rightBound = int(camera.Vec2Screen(np.array([self.dimensions[0],0]) + self.transform.position).x)
             upperBound = int(camera.Vec2Screen(np.array([0, self.dimensions[1]]) + self.transform.position).y)
@@ -110,10 +110,10 @@ class CartesianGraph2D(Element2D):
                     vec = camera.Screen2Vec(pygame.Vector2(xPix,yPix))
 
                     # print(vec[0]*vec[0] + vec[1]*vec[1])
-                    if satisfaction(vec[0],vec[1]):
+                    if relation(vec[0],vec[1]):
                         camera.screen.set_at((xPix,yPix),(255,255,255))
     
-    def drawSatisfactionsGPU():
+    def drawRelationsGPU():
         pass 
 
     def draw(self, camera):
@@ -212,5 +212,5 @@ class CartesianGraph2D(Element2D):
             drawVector(*vec)
 
         self.drawFunctions(camera)
-        self.drawSatisfactions(camera,0.1)
+        self.drawRelations(camera,0.1)
         
