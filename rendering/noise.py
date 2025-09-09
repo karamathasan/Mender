@@ -19,8 +19,7 @@ class Noise():
         plt.axis('off')
         plt.show()
 
-        # Save it
-        plt.imsave('noise.png', tex, cmap='gray')
+        plt.imsave('rendering/textures/noise.png', tex, cmap='gray')
         return tex
 
 class ValueNoise(Noise):

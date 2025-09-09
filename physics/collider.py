@@ -141,14 +141,29 @@ class Collider2D(Collider):
         return np.array(result)
     
     def getCenter(self):
-        sum = 0
-        for vertex in self.vertices:
-            sum += vertex
-        return sum/len(self.vertices)
+        # sum = 0
+        # for vertex in self.vertices:
+        #     sum += vertex
+        # return sum/len(self.vertices)
+        return np.mean(self.vertices, axis=0)
     
 class CircleCollider(Collider2D):
-    def __init__(self):
+    def __init__(self, parent, radius):
+        self.parent = parent
+        self.radius = radius
         pass
+
+    def checkCollision(self, other):
+        if isinstance(other, CircleCollider):
+            dist = np.linalg.norm(self.parent.transform.position - other.parent.transform.position)
+            return self.radius + other.radius >= dist
+        
+    def getPenetrationVector(self, other, polytope = None):
+        if isinstance(other, CircleCollider):
+            diff = self.parent.transform.position - other.parent.transform.position
+            dir = diff/np.linalg.norm(diff)
+            return dir
+
 
 class Collider3D(Collider):
     def __init__(self, parent, vertices: np.ndarray):

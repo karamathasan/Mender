@@ -34,6 +34,7 @@ class Transform2D(Transform):
     def shift(self, vec: np.ndarray):
         assert vec.shape == (2,)
         self.position += vec
+        return Transform2D(self.position,self.orientation) #may cause issues: different object, same attribute reference
 
     def rotate(self, degrees):
         self.orientation += degrees

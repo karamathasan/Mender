@@ -57,14 +57,50 @@ class ExplicitEuclid2D(Solver):
                         # return
                         v1 = entity1.collider.getPenetrationVector(entity2.collider,simplex)
                         v2 = entity2.collider.getPenetrationVector(entity1.collider,simplex)
-                        entity1.transform.shift(v1)
-                        entity2.transform.shift(v2)
+                        # entity1.transform.shift(v1)
+                        # entity2.transform.shift(v2)
                         self.handleCollsion(entity1, entity2)
                         # v1, v2 = self.handleCollsion(entity1, entity2)
                         # entity1.dynamics.set(velocity = v1)
                         # entity2.dynamics.set(velocity = v2)
             self.solve(entity1,dt)
-            
+
+
+class ExplicitEuclidSpatial2D(ExplicitEuclid2D):
+    def __init__(self):
+        self.entities = []
+        self.tree = QuadTree((16,16))
+
+    def initEntities(self, elements):
+        """
+        filters through a scene's elements to retrieve its entities
+        """
+        for element in elements:
+            if isinstance(element, Entity2D):
+                self.entities.append(element)
+                self.tree.add(element)
+
+    def solveEntities(self, dt):
+        # return super().solveEntities(dt)
+        self.tree.rebound()
+        self.traverse(self.tree, dt)
+    
+    def traverse(self, tree: QuadTree, dt):
+        if tree.is_leaf:
+            for child1 in tree.children:
+                for child2 in tree.children:
+
+                    if child1 != child2:
+                        simplex = child1.collider.checkCollision(child2.collider) 
+                        if simplex:
+                            self.handleCollsion(child1, child2)
+                self.solve(child1, dt)
+        else:
+            for child in tree.children:
+                self.traverse(child, dt)
+
+
+
 class ExplicitEuclid3D(Solver):
     def __init__(self):
         self.entities = []

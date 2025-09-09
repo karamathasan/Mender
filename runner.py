@@ -23,6 +23,8 @@ from animation.animationgroup import ParallelGroup, DeadlineGroup, RaceGroup, Se
 from animation.playable import Playable
 from presentation.presentation import Presentation
 
+from physics.environments import ManyBodyEnvironment2D
+
 if __name__ == "__main__":
     # pygame setup
     pygame.init()
@@ -35,9 +37,10 @@ if __name__ == "__main__":
     # Scene setup
     # 2D
     # p = Presentation()
-    scene = Scene2D(screen=screen, fps=fps)
-    
-    # square = SquareEntity(2,"red", gravity_enabled=False)
+    # scene = Scene2D(screen=screen, fps=fps)
+    scene = ManyBodyEnvironment2D(100, screen=screen, fps=fps)
+
+    # square = SquareEntity(2,"red", mass = 2, gravity_enabled=False)
     # square2 = SquareEntity(1,"white",gravity_enabled=False)
 
     # square.transform.orientation = np.pi/5
@@ -50,16 +53,33 @@ if __name__ == "__main__":
     # square2.dynamics.set(velocity=np.array([0,5]))
     # scene.add(square,square2)
 
-    p1 = PointMass()
+    #PARTICLES
+
+    # x_noise = PerlinNoise(32,256)
+    # y_noise = PerlinNoise(32,256)
+    
+    # particles = []
+    # s = 5
+    # d=1.5
+    # for i in range(s):
+    #     for j in range(s):
+    #         r = np.random.uniform(0,1,(2,))
+    #         v = 5 * np.array([x_noise.sample(r),y_noise.sample(r)])
+    #         t = Transform2D(np.array([d*(j-s//2),1.5*(i-s//2)]))
+    #         p = PointMass(transform=t)
+    #         p.dynamics.set(v)
+    #         particles.append(p)
+    # scene.add(*particles)
+
+    # p1 = PointMass()
+    # p2 = PointMass(transform=Transform2D(np.array([0.25,0])))
     # x_noise = ValueNoise(16,128)
     # y_noise = ValueNoise(16,128)
-    x_noise = PerlinNoise(16,64)
-    y_noise = PerlinNoise(16,64)
 
-    x_noise.generate_texture()
+    # x_noise.generate_texture()
 
-    scene.add(p1)
-
+    # scene.add(p1)
+    # scene.add(p2)
 
     elapsed_time = 0
     dt = 1/fps
@@ -73,14 +93,14 @@ if __name__ == "__main__":
         scene.physicsStep(dt)
         scene.render()
 
-        rand_var = np.random.uniform(0,1,(2,))
-        # vx = 2 * x_noise.sample(rand_var) -1
-        # vy = 2 * y_noise.sample(rand_var) -1
-        vx = x_noise.sample(rand_var)
-        vy = y_noise.sample(rand_var)
-        v = np.array([vx,vy])
-        p1.dynamics.set(15 * v)
-        print(15 * v)
+        # r1 = np.random.uniform(0,1,(2,))
+        # r2 = np.random.uniform(0,1,(2,))
+        # vx = 2 * x_noise.sample(r1) -1
+        # vy = 2 * y_noise.sample(r1) -1
+        # v1 = np.array([x_noise.sample(r1),y_noise.sample(r1)])
+        # v2 = np.array([x_noise.sample(r2),y_noise.sample(r2)])
+        # p1.dynamics.set(15 * v1)
+        # p2.dynamics.set(15 * v2)
 
         # square.collider.checkCollision(square2.collider)
         # if square.collider.checkCollision(square2.collider):
@@ -90,10 +110,8 @@ if __name__ == "__main__":
         pygame.display.flip()
         dt = clock.tick(fps)/1000
 
-
-
         elapsed_time += dt
-        # print(f"true fps: {1/dt}")
+        print(f"true fps: {1/dt}")
 
     pygame.quit()
 
