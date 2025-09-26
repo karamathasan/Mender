@@ -34,6 +34,8 @@ class Renderer3D(Renderer):
         mf = cl.mem_flags
         self.zbuffer_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.zbuffer)
         self.pxarray_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=self.pxarray)
+        # self.zbuffer_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.ALLOC_HOST_PTR, hostbuf=self.zbuffer)
+        # self.pxarray_g = cl.Buffer(self.ctx, mf.READ_WRITE | mf.ALLOC_HOST_PTR, hostbuf=self.pxarray)
         self.prg = cl.Program(self.ctx, """
         __kernel void rasterize(
                 __global float *zbuffer_g,
@@ -144,15 +146,17 @@ class Renderer3D(Renderer):
             loopend = time.time()
             nonknl += knlstart - loopstart
             inknl += loopend - knlstart
+            
         startcopy = time.time()
         cl.enqueue_copy(self.queue, self.pxarray, self.pxarray_g, is_blocking=False)
         # cl.enqueue_copy(self.queue, self.zbuffer, self.zbuffer_g, is_blocking=False)
         end = time.time()
-        print(f"time spent in knl: {inknl}")
-        print(f"time spent out knl: {nonknl}")
+
+        # print(f"time spent in knl: {inknl}")
+        # print(f"time spent out knl: {nonknl}")
         # print(f"time spent on copy: {end - startcopy}")
         # print(f"sum {inknl + nonknl + end - startcopy}")
-        print(f"    total time: {end - start}\n")
+        # print(f"    total time: {end - start}\n")
 
     def rasterizeCPU(self, tasks: list[RenderTask]):
         for task in tasks:
@@ -387,11 +391,11 @@ class DoubleBufferRenderer3D(Renderer3D):
         # cl.enqueue_copy(self.queue, self.zbuffer_fronthost, self.zbuffer_frontbuf, is_blocking = False)
         # cl.enqueue_copy(self.queue, self.zbuffer_backhost, self.zbuffer_backbuf, is_blocking = False)
 
-        # self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
-        # self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
+        self.pxarray_frontbuf, self.pxarray_backbuf = self.pxarray_backbuf, self.pxarray_frontbuf
+        self.zbuffer_frontbuf, self.zbuffer_backbuf = self.zbuffer_backbuf, self.zbuffer_frontbuf
 
-        # self.zbuffer_fronthost, self.zbuffer_backhost = self.zbuffer_backhost, self.zbuffer_fronthost
-        # self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
+        self.zbuffer_fronthost, self.zbuffer_backhost = self.zbuffer_backhost, self.zbuffer_fronthost
+        self.pxarray_fronthost, self.pxarray_backhost = self.pxarray_backhost, self.pxarray_fronthost
         end = time.time()
         # print(end - start)
 

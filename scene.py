@@ -74,8 +74,8 @@ class Scene3D(Scene):
         self.elements.extend(args)
 
     def render(self):
-        self.camera.doubleRender(self.elements)
-        # self.camera.render(self.elements)
+        # self.camera.doubleRender(self.elements)
+        self.camera.render(self.elements)
         # self.camera.paint(self.elements)
         # pass
 

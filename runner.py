@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # cube.dynamics.set(velocity= 2 * np.array([1,0,0]))
 
     cube2 = CubeEntity(1, gravity_enabled=False)
-    cube2.transform.shift(np.array([0,2,-1]))
+    cube2.transform.shift(np.array([0,2,-10]))
     cube2.dynamics.set(angular_velocity= 75 * np.array([0,1,1]))
 
     sphere = Sphere3D(1)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # plane = Plane3D()
 
-    _3dscene = Scene3D(sphere, screen=screen, camera=camera, fps=fps)
+    _3dscene = Scene3D(cube2, screen=screen, camera=camera, fps=fps)
     # scene.render()
 
     elapsed_time = 0
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         dt = clock.tick(fps)/1000
 
         elapsed_time += dt
-        print(f"true fps: {1/dt}")
+        print(f"\rtrue fps: {1/dt}", end='', flush=True)
 
     pygame.quit()
 

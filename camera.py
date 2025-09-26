@@ -3,6 +3,7 @@ import numpy as np
 from physics.transform import Transform2D, Transform3D
 from rendering.quaternion import Quaternion
 from rendering.renderer import Painter3D, Renderer3D, DoubleBufferRenderer3D
+from rendering.frustum import Frustum
 from abc import ABC
 
 import time
@@ -12,7 +13,7 @@ class Camera(ABC):
         self.screen = screen
         self.width = width
         self.pxarray = pygame.PixelArray(screen)
-        self.aspect = aspect_ratio
+        self.aspect_ratio = aspect_ratio
         pass
 
     def render(self, element):
@@ -91,7 +92,7 @@ class Camera3D(Camera):
         v = vec - self.transform.position
         u = self.direction
         v = (self.transform.orientation.conjugate() * Quaternion.Vec2Quaternion(v) * self.transform.orientation).toVec()
-        if np.dot(v,u) <= 0:            
+        if np.dot(v,u) <= 0:  # rear cull          
             return
         v = v - u * np.dot(u,v) / np.dot(u,u)
 
@@ -110,6 +111,10 @@ class Camera3D(Camera):
             self.painter.addTasks(tasks)
         self.painter.drawFaces()
 
+    def backface_cull(self, task):
+        if np.dot(task.normal, self.getGlobalDirection()) > 0:
+            return True
+
     def render(self, elements):    
         tasks = []
         for element in elements:
@@ -120,7 +125,8 @@ class Camera3D(Camera):
         self.renderer.clear()
 
         # self.renderer.rasterizeCPU(tasks)
-        self.renderer.rasterizeGPU(tasks)
+        # self.renderer.rasterizeGPU(tasks)
+        self.doubleRenderer.rasterizeGPU(tasks)
         self.renderer.updatePixels()
 
     def doubleRender(self, elements):    
@@ -149,6 +155,8 @@ class Perspective3D(Camera3D):
     def __init__(self, screen:pygame.Surface, aspect_ratio: float = 16/9, near_clip: float = 0.01, far_clip: float = 100, fov = 100, transform: Transform3D = None):
         super().__init__(screen, 2 * np.tan(np.deg2rad(fov/2)) * near_clip, aspect_ratio, transform, near_clip, far_clip)
         self.fov = fov
+
+        self.view_frustum = Frustum(self)
     
     def Vec2Screen(self, vec):
         v = vec - self.transform.position
@@ -168,6 +176,35 @@ class Perspective3D(Camera3D):
         if not (0 <= pygY < size[1]):
             return 
         return pygame.Vector2(pygX,pygY)
+
+    def frustum_cull(self, elements):
+        in_view = []
+        for element in elements:
+            keep = True
+            for vertex in element.vertices:
+                if not (vertex in self.view_frustum):
+                    keep = False
+                    break
+            if keep:
+                in_view.append(element)
+        return in_view
+                
+
+    def render(self, elements):    
+        tasks = []
+        viewable = self.frustum_cull(elements)
+        # for element in elements:
+        for element in viewable:
+            for task in element.draw(self):
+                if np.dot(task.normal, self.getGlobalDirection()) > 0:
+                    #backface culling
+                    tasks.append(task)
+        self.renderer.clear()
+
+        self.renderer.rasterizeCPU(tasks)
+        # self.renderer.rasterizeGPU(tasks)
+        # self.doubleRenderer.rasterizeGPU(tasks)
+        self.renderer.updatePixels()
 
 class Orthographic3D(Camera3D):
     def __init__(self, screen: pygame.Surface, width = 30, aspect_ratio: float = 16/9, transform: Transform3D = None, near_clip = 0.1, far_clip = 100):

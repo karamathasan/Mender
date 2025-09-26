@@ -4,6 +4,7 @@ from abc import ABC
 class Element(ABC):
     def __init__(self):
         self.transform: Transform 
+        self.vertices: list
         pass
 
     def draw(self):
